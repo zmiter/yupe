@@ -1,5 +1,5 @@
 <?php
-class DefaultController extends YFrontController
+class DefaultController extends yupe\components\controllers\FrontController
 {
 	/**
 	 * By default wiki displays page with unique id = 'index'
@@ -98,15 +98,15 @@ class DefaultController extends YFrontController
 		if(!$page)
 		{
 			$page = new WikiPage();
-			$comment = Yii::t('wiki', 'Created new page');
+			$comment = Yii::t('WikiModule.wiki', 'Created new page');
 		}
 
 		$page->setWikiUid($uid);
 
-		if(Yii::app()->request->getPost('WikiPage'))
+		if(Yii::app()->getRequest()->getPost('WikiPage'))
 		{
-			$comment = Yii::app()->request->getPost('comment', '');
-			$page->setAttributes(Yii::app()->request->getPost('WikiPage'));
+			$comment = Yii::app()->getRequest()->getPost('comment', '');
+			$page->setAttributes(Yii::app()->getRequest()->getPost('WikiPage'));
 
 			/** @var $auth IWikiAuth */
 			$auth = $this->getModule()->getAuth();

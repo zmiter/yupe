@@ -1,12 +1,27 @@
 <?php
-class NewsModule extends YWebModule
+
+/**
+ * NewsModule основной класс модуля news
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.news
+ * @since 0.1
+ *
+ */
+
+use yupe\components\WebModule;
+
+class NewsModule extends WebModule
 {
     public $uploadPath        = 'news';
     public $allowedExtensions = 'jpg,jpeg,png,gif';
     public $minSize           = 0;
-    public $maxSize;
-    public $maxFiles          = 1;
-    public $mainCategory;
+    public $maxSize           = 5368709120;
+    public $maxFiles          = 1;   
+    public $rssCount          = 10;
+    public $perPage           = 10;
 
     public function getDependencies()
     {
@@ -23,8 +38,9 @@ class NewsModule extends YWebModule
 
     public function getInstall()
     {
-        if(parent::getInstall())
+        if(parent::getInstall()) {
             @mkdir($this->getUploadPath(),0755);
+        }
 
         return false;
     }
@@ -36,30 +52,32 @@ class NewsModule extends YWebModule
         $uploadPath = $this->getUploadPath();
 
         if (!is_writable($uploadPath))
-            $messages[YWebModule::CHECK_ERROR][] =  array(
-                'type'    => YWebModule::CHECK_ERROR,
-                'message' => Yii::t('NewsModule.news', 'Директория "{dir}" не доступна для записи! {link}', array(
+            $messages[WebModule::CHECK_ERROR][] =  array(
+                'type'    => WebModule::CHECK_ERROR,
+                'message' => Yii::t('NewsModule.news', 'Directory "{dir}" is not accessible for write! {link}', array(
                     '{dir}'  => $uploadPath,
-                    '{link}' => CHtml::link(Yii::t('NewsModule.news', 'Изменить настройки'), array(
+                    '{link}' => CHtml::link(Yii::t('NewsModule.news', 'Change settings'), array(
                         '/yupe/backend/modulesettings/',
                         'module' => 'news',
                      )),
                 )),
             );
 
-        return (isset($messages[YWebModule::CHECK_ERROR])) ? $messages : true;
+        return (isset($messages[WebModule::CHECK_ERROR])) ? $messages : true;
     }
 
     public function getParamsLabels()
     {
         return array(
-            'mainCategory'      => Yii::t('NewsModule.news', 'Главная категория новостей'),
-            'adminMenuOrder'    => Yii::t('NewsModule.news', 'Порядок следования в меню'),
-            'editor'            => Yii::t('NewsModule.news', 'Визуальный редактор'),
-            'uploadPath'        => Yii::t('NewsModule.news', 'Каталог для загрузки файлов (относительно {path})', array('{path}' => Yii::getPathOfAlias('webroot') . DIRECTORY_SEPARATOR . Yii::app()->getModule("yupe")->uploadPath)),
-            'allowedExtensions' => Yii::t('NewsModule.news', 'Разрешенные расширения (перечислите через запятую)'),
-            'minSize'           => Yii::t('NewsModule.news', 'Минимальный размер (в байтах)'),
-            'maxSize'           => Yii::t('NewsModule.news', 'Максимальный размер (в байтах)'),
+            'mainCategory'      => Yii::t('NewsModule.news', 'Main news category'),
+            'adminMenuOrder'    => Yii::t('NewsModule.news', 'Menu items order'),
+            'editor'            => Yii::t('NewsModule.news', 'Visual Editor'),
+            'uploadPath'        => Yii::t('NewsModule.news', 'Uploading files catalog (relatively {path})', array('{path}' => Yii::getPathOfAlias('webroot') . DIRECTORY_SEPARATOR . Yii::app()->getModule("yupe")->uploadPath)),
+            'allowedExtensions' => Yii::t('NewsModule.news', 'Accepted extensions (separated by comma)'),
+            'minSize'           => Yii::t('NewsModule.news', 'Minimum size (in bytes)'),
+            'maxSize'           => Yii::t('NewsModule.news', 'Maximum size (in bytes)'),
+            'rssCount'          => Yii::t('NewsModule.news', 'RSS records'),
+            'perPage'           => Yii::t('NewsModule.news', 'News per page')
         );
     }
 
@@ -73,12 +91,14 @@ class NewsModule extends YWebModule
             'allowedExtensions',
             'minSize',
             'maxSize',
+            'rssCount',
+            'perPage'
         );
     }
 
     public function getVersion()
     {
-        return Yii::t('NewsModule.news', '0.3');
+        return Yii::t('NewsModule.news', '0.5');
     }
 
     public function getIsInstallDefault()
@@ -88,17 +108,17 @@ class NewsModule extends YWebModule
 
     public function getCategory()
     {
-        return Yii::t('NewsModule.news', 'Контент');
+        return Yii::t('NewsModule.news', 'Content');
     }
 
     public function getName()
     {
-        return Yii::t('NewsModule.news', 'Новости');
+        return Yii::t('NewsModule.news', 'News');
     }
 
     public function getDescription()
     {
-        return Yii::t('NewsModule.news', 'Модуль для создания и публикации новостей');
+        return Yii::t('NewsModule.news', 'Module for creating and management news');
     }
 
     public function getAuthor()
@@ -121,25 +141,17 @@ class NewsModule extends YWebModule
         return "leaf";
     }
 
+    public function getAdminPageLink()
+    {
+        return '/news/newsBackend/index';
+    }
+
     public function getNavigation()
     {
         return array(
-            array('icon' => 'list-alt', 'label' => Yii::t('NewsModule.news', 'Список новостей'), 'url' => array('/news/default/index')),
-            array('icon' => 'plus-sign', 'label' => Yii::t('NewsModule.news', 'Добавить новость'), 'url' => array('/news/default/create')),
+            array('icon' => 'list-alt', 'label' => Yii::t('NewsModule.news', 'News list'), 'url' => array('/news/newsBackend/index')),
+            array('icon' => 'plus-sign', 'label' => Yii::t('NewsModule.news', 'Create article'), 'url' => array('/news/newsBackend/create')),
         );
-    }
-
-    public function getCategoryList()
-    {
-        $criteria = ($this->mainCategory)
-            ? array(
-                'condition' => 'id = :id OR parent_id = :id',
-                'params'    => array(':id' => $this->mainCategory),
-                'order'     => 'id ASC',
-            )
-            : array();
-
-        return Category::model()->findAll($criteria);
     }
 
     public function isMultiLang()
@@ -152,8 +164,7 @@ class NewsModule extends YWebModule
         parent::init();
 
         $this->setImport(array(
-            'news.models.*',
-            'news.components.*',
+            'news.models.*'            
         ));
     }
 }

@@ -3,7 +3,7 @@
  * Отображение для sitesettings:
  * 
  *   @category YupeView
- *   @package  YupeCMS
+ *   @package  yupe
  *   @author   Yupe Team <team@yupe.ru>
  *   @license  https://github.com/yupe/yupe/blob/master/LICENSE BSD
  *   @link     http://yupe.ru
@@ -25,9 +25,11 @@ Yii::app()->clientScript->registerScript(
     });"
 ); ?>
 
+    <?php $this->widget('install.widgets.GetHelpWidget');?>
+
     <div class="alert alert-block alert-info">
-        <p><?php echo Yii::t('InstallModule.install', 'Укажите название Вашего сайта, его описание и ключевые слова, необходимые для SEO-оптимизации.'); ?></p>
-        <p><?php echo Yii::t('InstallModule.install', 'Узнать больше о SEO-оптимизации можно {link}.', array('{link}' => CHtml::link(Yii::t('InstallModule.install', 'вот здесь'), 'http://help.yandex.ru/webmaster/?id=1108938', array('target' => '_blank')))); ?></p>
+        <p><?php echo Yii::t('InstallModule.install', 'Select your site title, description and keywords for SEO.'); ?></p>
+        <p><?php echo Yii::t('InstallModule.install', 'More about SEO {link}', array('{link}' => CHtml::link(Yii::t('InstallModule.install', 'here'), 'http://help.yandex.ru/webmaster/?id=1108938', array('target' => '_blank')))); ?></p>
     </div>
 
     <?php echo $form->errorSummary($data['model']); ?>  
@@ -61,7 +63,7 @@ Yii::app()->clientScript->registerScript(
     <?php
     $this->widget(
         'bootstrap.widgets.TbButton', array(
-            'label' => Yii::t('InstallModule.install', '< Назад'),
+            'label' => Yii::t('InstallModule.install', '< Back'),
             'url'   => array('/install/default/createuser'),
         )
     ); ?>
@@ -70,7 +72,7 @@ Yii::app()->clientScript->registerScript(
         'bootstrap.widgets.TbButton', array(
             'buttonType' => 'submit',
             'type'       => 'primary',
-            'label'      => Yii::t('InstallModule.install', 'Продолжить >'),
+            'label'      => Yii::t('InstallModule.install', 'Continue >'),
         )
     ); ?>
 

@@ -3,7 +3,7 @@
  * Отображение для createuser:
  * 
  *   @category YupeView
- *   @package  YupeCMS
+ *   @package  yupe
  *   @author   Yupe Team <team@yupe.ru>
  *   @license  https://github.com/yupe/yupe/blob/master/LICENSE BSD
  *   @link     http://yupe.ru
@@ -26,10 +26,12 @@ Yii::app()->clientScript->registerScript(
 );
 ?>
 
+    <?php $this->widget('install.widgets.GetHelpWidget');?>
+
     <div class="alert alert-block alert-info">
-        <p><?php echo Yii::t('InstallModule.install', 'Создайте учетную запись администратора сайта.'); ?></p>
-        <p><?php echo Yii::t('InstallModule.install', 'Пожалуйста, указывайте сложный пароль, содержащий как цифры и буквы, так и специальные символы.'); ?></p>
-        <p><?php echo Yii::t('InstallModule.install', 'Запомните, указанные на данном этапе данные, они Вам потребуются для доступа к панели управления.'); ?></p>
+        <p><?php echo Yii::t('InstallModule.install', 'Create admin account'); ?></p>
+        <p><?php echo Yii::t('InstallModule.install', 'Please select hard password with digits, alphas and special symbols.'); ?></p>
+        <p><?php echo Yii::t('InstallModule.install', 'Memorize please. Data form this section will need you for Control Panel access'); ?></p>
     </div>
 
     <?php echo $form->errorSummary($data['model']); ?>
@@ -53,7 +55,7 @@ Yii::app()->clientScript->registerScript(
     <?php
     $this->widget(
         'bootstrap.widgets.TbButton', array(
-            'label' => Yii::t('InstallModule.install', '< Назад'),
+            'label' => Yii::t('InstallModule.install', '< Back'),
             'url'   => array('/install/default/modulesinstall'),
         )
     ); ?>
@@ -62,7 +64,7 @@ Yii::app()->clientScript->registerScript(
         'bootstrap.widgets.TbButton', array(
             'buttonType' => 'submit',
             'type'       => 'primary',
-            'label'      => Yii::t('InstallModule.install', 'Продолжить >'),
+            'label'      => Yii::t('InstallModule.install', 'Continue >'),
         )
     ); ?>
 

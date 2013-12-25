@@ -1,4 +1,15 @@
 <?php
+/**
+ * ImageToGallery модель-связка изображения и галереи
+ *
+ * @category YupeMigration
+ * @package  yupe.modules.gallery.models
+ * @author   YupeTeam <team@yupe.ru>
+ * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
+ * @link     http://yupe.ru
+ *
+ **/
+
 
 /**
  * This is the model class for table "ImageToGallery".
@@ -30,7 +41,7 @@ class ImageToGallery extends YModel
      */
     public function tableName()
     {
-        return '{{image_to_gallery}}';
+        return '{{gallery_image_to_gallery}}';
     }
 
     /**
@@ -65,9 +76,9 @@ class ImageToGallery extends YModel
     {
         return array(
             'id'            => Yii::t('GalleryModule.gallery', 'id'),
-            'image_id'      => Yii::t('GalleryModule.gallery', 'Изображение'),
-            'gallery_id'    => Yii::t('GalleryModule.gallery', 'Галерея'),
-            'creation_date' => Yii::t('GalleryModule.gallery', 'Дата добавления'),
+            'image_id'      => Yii::t('GalleryModule.gallery', 'Image'),
+            'gallery_id'    => Yii::t('GalleryModule.gallery', 'Gallery'),
+            'creation_date' => Yii::t('GalleryModule.gallery', 'Created at'),
         );
     }
 
@@ -92,8 +103,9 @@ class ImageToGallery extends YModel
 
     public function beforeSave()
     {
-        if ($this->isNewRecord)
+        if ($this->isNewRecord) {
             $this->creation_date = new CDbExpression('NOW()');
+        }
         return parent::beforeSave();
     }
 }

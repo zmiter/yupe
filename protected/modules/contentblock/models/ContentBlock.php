@@ -1,6 +1,16 @@
 <?php
 
 /**
+ * Модель ContentBlock
+ *
+ * @category YupeMigration
+ * @package  yupe.modules.contentblock.models
+ * @author   YupeTeam <team@yupe.ru>
+ * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
+ * @link     http://yupe.ru
+ **/
+
+/**
  * This is the model class for table "ContentBlock".
  *
  * The followings are the available columns in table 'ContentBlock':
@@ -12,7 +22,6 @@
  */
 class ContentBlock extends YModel
 {
-
     const SIMPLE_TEXT = 1;
     const PHP_CODE    = 2;
     const HTML_TEXT   = 3;
@@ -32,7 +41,7 @@ class ContentBlock extends YModel
      */
     public function tableName()
     {
-        return '{{content_block}}';
+        return '{{contentblock_content_block}}';
     }
 
     /**
@@ -45,10 +54,12 @@ class ContentBlock extends YModel
             array('name, code', 'filter', 'filter' => array($obj = new CHtmlPurifier(), 'purify')),
             array('name, code, content, type', 'required'),
             array('type', 'numerical', 'integerOnly' => true),
+            array('type', 'length', 'max' => 11),
             array('type', 'in', 'range' => array_keys($this->types)),
-            array('name, code', 'length', 'max' => 50),
-            array('description', 'length', 'max' => 300),
-            array('code', 'YSLugValidator', 'message' => Yii::t('ContentBlockModule.contentblock', 'Неверный формат поля "{attribute}" допустимы только буквы, цифры и символ подчеркивания, от 2 до 50 символов')),
+            array('name', 'length', 'max' => 250),
+            array('code', 'length', 'max' => 100),
+            array('description', 'length', 'max' => 255),
+            array('code', 'YSLugValidator', 'message' => Yii::t('ContentBlockModule.contentblock', 'Unknown field format "{attribute}" only alphas, digits and _, from 2 to 50 characters')),
             array('code', 'unique'),
             array('id, name, code, type, content, description', 'safe', 'on' => 'search'),
         );
@@ -61,11 +72,11 @@ class ContentBlock extends YModel
     {
         return array(
             'id'          => Yii::t('ContentBlockModule.contentblock', 'id'),
-            'name'        => Yii::t('ContentBlockModule.contentblock', 'Название'),
-            'code'        => Yii::t('ContentBlockModule.contentblock', 'Символьный код'),
-            'type'        => Yii::t('ContentBlockModule.contentblock', 'Тип'),
-            'content'     => Yii::t('ContentBlockModule.contentblock', 'Контент'),
-            'description' => Yii::t('ContentBlockModule.contentblock', 'Описание'),
+            'name'        => Yii::t('ContentBlockModule.contentblock', 'Title'),
+            'code'        => Yii::t('ContentBlockModule.contentblock', 'Code'),
+            'type'        => Yii::t('ContentBlockModule.contentblock', 'Type'),
+            'content'     => Yii::t('ContentBlockModule.contentblock', 'Content'),
+            'description' => Yii::t('ContentBlockModule.contentblock', 'Description'),
         );
     }
 
@@ -79,8 +90,8 @@ class ContentBlock extends YModel
         // should not be searched.
 
         $criteria = new CDbCriteria();
-        $criteria->compare('name', $this->name);
-        $criteria->compare('code', $this->code);
+        $criteria->compare('name', $this->name, true);
+        $criteria->compare('code', $this->code, true);
         $criteria->compare('type', $this->type);
         $criteria->compare('content', $this->content);
         $criteria->compare('description', $this->description);
@@ -91,15 +102,15 @@ class ContentBlock extends YModel
     public function getTypes()
     {
         return array(
-            self::SIMPLE_TEXT => Yii::t('ContentBlockModule.contentblock', 'Простой текст'),
-            self::PHP_CODE    => Yii::t('ContentBlockModule.contentblock', 'Исполняемый PHP код'),
-            self::HTML_TEXT   => Yii::t('ContentBlockModule.contentblock', 'HTML код'),
+            self::SIMPLE_TEXT => Yii::t('ContentBlockModule.contentblock', 'Full text'),
+            self::PHP_CODE    => Yii::t('ContentBlockModule.contentblock', 'Executed PHP code'),
+            self::HTML_TEXT   => Yii::t('ContentBlockModule.contentblock', 'HTML code'),
         );
     }
 
     public function getType()
     {
         $data = $this->types;
-        return isset($data[$this->type]) ? $data[$this->type] : Yii::t('ContentBlockModule.contentblock', '*неизвестный тип*');
+        return isset($data[$this->type]) ? $data[$this->type] : Yii::t('ContentBlockModule.contentblock', '*unknown type*');
     }
 }

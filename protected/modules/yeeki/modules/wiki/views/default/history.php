@@ -1,4 +1,9 @@
-<h1><?php echo CHtml::link(CHtml::encode($page->getWikiUid()), array('view', 'uid' => $page->getWikiUid()))?> <?php echo Yii::t('wiki', 'version history')?></h1>
+<?php $this->breadcrumbs = array(
+     Yii::t('WikiModule.wiki', 'Wiki') => array('/wiki/default/pageIndex'),
+     Yii::t('WikiModule.wiki', 'History')
+);?>
+
+<h1><?php echo CHtml::link(CHtml::encode($page->getWikiUid()), array('view', 'uid' => $page->getWikiUid()))?> <?php echo Yii::t('WikiModule.wiki', 'version history')?></h1>
 
 <?php echo CHtml::beginForm()?>
 <table>
@@ -18,6 +23,6 @@
 	<?php endforeach ?>
 </table>
 <div>
-	<?php echo CHtml::submitButton(Yii::t('wiki', 'Show diff'))?>
+	<?php echo CHtml::submitButton(Yii::t('WikiModule.wiki', 'Show diff'))?>
 </div>
 <?php echo CHtml::endForm()?>

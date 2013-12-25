@@ -1,6 +1,18 @@
 <?php
+/**
+ * CategoryModule основной класс модуля category
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.category
+ * @since 0.1
+ *
+ */
 
-class CategoryModule extends YWebModule
+use yupe\components\WebModule;
+
+class CategoryModule extends WebModule
 {
     public $uploadPath = 'category';
 
@@ -16,24 +28,25 @@ class CategoryModule extends YWebModule
         $uploadPath = $this->getUploadPath();
 
         if (!is_writable($uploadPath))
-            $messages[YWebModule::CHECK_ERROR][] = array(
-                'type'    => YWebModule::CHECK_ERROR,
-                'message' => Yii::t('CategoryModule.category', 'Директория "{dir}" не доступна для записи! {link}', array(
+            $messages[WebModule::CHECK_ERROR][] = array(
+                'type'    => WebModule::CHECK_ERROR,
+                'message' => Yii::t('CategoryModule.category', 'Directory "{dir}" is available for write! {link}', array(
                     '{dir}'  => $uploadPath,
-                    '{link}' => CHtml::link(Yii::t('CategoryModule.category', 'Изменить настройки'), array(
+                    '{link}' => CHtml::link(Yii::t('CategoryModule.category', 'Change settings'), array(
                         '/yupe/backend/modulesettings/',
                         'module' => 'category',
                     )),
                 )),
             );
 
-        return isset($messages[YWebModule::CHECK_ERROR]) ? $messages : true;
+        return isset($messages[WebModule::CHECK_ERROR]) ? $messages : true;
     }
 
     public function getInstall()
     {
-        if(parent::getInstall())
+        if(parent::getInstall()){
             @mkdir($this->getUploadPath(),0755);
+        }
 
         return false;
     }
@@ -49,8 +62,8 @@ class CategoryModule extends YWebModule
     public function getParamsLabels()
     {
         return array(
-            'adminMenuOrder' => Yii::t('CategoryModule.category', 'Порядок следования в меню'),
-            'uploadPath'     => Yii::t('CategoryModule.category', 'Каталог для загрузки файлов (относительно Yii::app()->getModule("yupe")->uploadPath)'),
+            'adminMenuOrder' => Yii::t('CategoryModule.category', 'Menu items order'),
+            'uploadPath'     => Yii::t('CategoryModule.category', 'File uploading catalog (relatively Yii::app()->getModule("yupe")->uploadPath)'),
         );
     }
 
@@ -61,22 +74,22 @@ class CategoryModule extends YWebModule
 
     public function getVersion()
     {
-        return Yii::t('CategoryModule.category', '0.3');
+        return Yii::t('CategoryModule.category', '0.6');
     }
 
     public function getCategory()
     {
-        return Yii::t('CategoryModule.category', 'Структура');
+        return Yii::t('CategoryModule.category', 'Structure');
     }
 
     public function getName()
     {
-        return Yii::t('CategoryModule.category', 'Категории/разделы');
+        return Yii::t('CategoryModule.category', 'Categories/Sections');
     }
 
     public function getDescription()
     {
-        return Yii::t('CategoryModule.category', 'Модуль для управления категориями/разделами сайта');
+        return Yii::t('CategoryModule.category', 'Module for categories/sections management');
     }
 
     public function getAuthor()
@@ -117,8 +130,13 @@ class CategoryModule extends YWebModule
     public function getNavigation()
     {
         return array(
-            array('icon' => 'list-alt', 'label' => Yii::t('CategoryModule.category', 'Список категорий'), 'url' => array('/category/default/index')),
-            array('icon' => 'plus-sign', 'label' => Yii::t('CategoryModule.category', 'Добавить категорию'), 'url' => array('/category/default/create')),
+            array('icon' => 'list-alt', 'label' => Yii::t('CategoryModule.category', 'Categories list'), 'url' => array('/category/categoryBackend/index')),
+            array('icon' => 'plus-sign', 'label' => Yii::t('CategoryModule.category', 'Create category'), 'url' => array('/category/categoryBackend/create')),
         );
+    }
+
+    public function getAdminPageLink()
+    {
+        return '/category/categoryBackend/index';
     }
 }

@@ -1,4 +1,5 @@
-**Наша команда**
+Наша команда
+============
 
 - Опейкин Андрей [http://andrey.opeykin.ru](http://andrey.opeykin.ru/)
 - Тищенко Александр [https://twitter.com/archaron](https://twitter.com/archaron)
@@ -7,6 +8,8 @@
 - Куликов Евгений [http://akulikov.org.ua](http://akulikov.org.ua)
 - Тимашов Максим  apexwire@gmail.com
 - Черепанов Антон [https://twitter.com/davetoxa](https://twitter.com/davetoxa)
-- Николай Седов [http://vk.com/mikspark](http://vk.com/mikspark)
+- Седов Николай [https://twitter.com/mik_spark](https://twitter.com/mik_spark)
+- Кучеров Антон [http://idexter.ru/](http://idexter.ru/)
+- Кирилл Чистов [http://brainstorage.me/hitakiri/profile](http://brainstorage.me/hitakiri/profile)
 
 [Ждем только тебя !](http://yupe.ru/feedback/index)

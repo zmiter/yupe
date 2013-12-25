@@ -1,3 +1,8 @@
+<?php $this->breadcrumbs = array(
+     Yii::t('WikiModule.wiki', 'Wiki') => array('/wiki/default/pageIndex'),
+     Yii::t('WikiModule.wiki', 'Diff')
+);?>
+
 <h1>
 	<?php echo CHtml::link(CHtml::encode($uid), array('view', 'uid' => $uid))?>
 	diff for

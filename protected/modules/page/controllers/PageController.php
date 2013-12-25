@@ -1,16 +1,16 @@
 <?php
 /**
+ * PageController публичный контроллер для работы со страницами
  *
- * PageController
- *
- * Контроллер для работы со страничками в публичной части сайта
- *
- * @author  xoma <aopeykin@yandex.ru> <http://yupe.ru>
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
  * @package yupe.modules.page.controllers
- *
+ * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
+ * @since 0.1
  *
  */
-class PageController extends YFrontController
+class PageController extends yupe\components\controllers\FrontController
 {
     /**
      * Текущая просматриваемая страница
@@ -20,14 +20,12 @@ class PageController extends YFrontController
     /**
      * экшн для отображения конкретной страницы, отображает опубликованные страницы и превью
      */
-    public function actionShow($slug = null)
+    public function actionShow($slug)
     {
-        if (!$slug)
-            throw new CHttpException('404', Yii::t('PageModule.page', 'Страница не найдена!'));
-
+        $this->layout = '//layouts/page-default';
         $page = null;
         // превью
-        $page = ((int) Yii::app()->request->getQuery('preview') === 1 && Yii::app()->user->isSuperUser())
+        $page = ((int) Yii::app()->getRequest()->getQuery('preview') === 1 && Yii::app()->user->isSuperUser())
             ? Page::model()->find('slug = :slug AND (lang=:lang OR (lang IS NULL))', array(
                 ':slug' => $slug,
                 ':lang' => Yii::app()->language,
@@ -37,19 +35,22 @@ class PageController extends YFrontController
                 ':lang'    => Yii::app()->language,
                 ':deflang' => Yii::app()->getModule('yupe')->defaultLanguage,
             ));
-        if (!$page)
-            throw new CHttpException('404', Yii::t('PageModule.page', 'Страница не найдена!'));
+
+        if (!$page) {
+            throw new CHttpException('404', Yii::t('PageModule.page', 'Page was not found'));
+        }
 
         // проверим что пользователь может просматривать эту страницу
         if ($page->is_protected == Page::PROTECTED_YES && !Yii::app()->user->isAuthenticated())
         {
             Yii::app()->user->setFlash(
-                YFlashMessages::NOTICE_MESSAGE,
-                Yii::t('PageModule.page', 'Для просмотра этой страницы Вам необходимо авторизоваться!')
+                YFlashMessages::ERROR_MESSAGE,
+                Yii::t('PageModule.page', 'You must be authorized user for view this page!')
             );
             $this->redirect(array(Yii::app()->getModule('user')->accountActivationSuccess));
         }
         $this->currentPage = $page;
+
         $this->render('page', array('page' => $page));
     }
 
@@ -59,11 +60,12 @@ class PageController extends YFrontController
     public function getBreadCrumbs()
     {
         $pages = array();
-        if ($this->currentPage->parentPage)
+        if ($this->currentPage->parentPage) {
             $pages = $this->getBreadCrumbsRecursively($this->currentPage->parentPage);
+        }
 
         $pages = array_reverse($pages);
-        array_push($pages, $this->currentPage->title);
+        $pages[] = $this->currentPage->title;
         return $pages;
     }
 
@@ -78,8 +80,9 @@ class PageController extends YFrontController
         $pages = array();
         $pages[$page->title] = array('/page/page/show', 'slug' => $page->slug);
         $pp = $page->parentPage;
-        if ($pp)
+        if ($pp) {
             $pages += $this->getBreadCrumbsRecursively($pp);
+        }
         return $pages;
     }
 }

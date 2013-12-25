@@ -4,7 +4,7 @@
  * - $this: the BootCrudCode object
  *
  *   @category YupeGiiTemplate
- *   @package  YupeCMS
+ *   @package  yupe
  *   @author   Yupe Team <team@yupe.ru>
  *   @license  https://github.com/yupe/yupe/blob/master/LICENSE BSD
  *   @link     http://yupe.ru
@@ -19,7 +19,7 @@ echo <<<EOF
  * Отображение для index:
  *
  *   @category YupeView
- *   @package  YupeCMS
+ *   @package  yupe
  *   @author   Yupe Team <team@yupe.ru>
  *   @license  https://github.com/yupe/yupe/blob/master/LICENSE BSD
  *   @link     http://yupe.ru
@@ -74,7 +74,7 @@ EOF;
 
 <p> <?php echo "<?php echo Yii::t('{$this->mid}', 'В данном разделе представлены средства управления {$this->mtvor}'); ?>\n"; ?></p>
 
-<?php echo "<?php\n"; ?> $this->widget('application.modules.yupe.components.YCustomGridView', array(
+<?php echo "<?php\n"; ?> $this->widget('yupe\widgets\CustomGridView', array(
     'id'           => '<?php echo $this->class2id($this->modelClass); ?>-grid',
     'type'         => 'condensed',
     'dataProvider' => $model->search(),

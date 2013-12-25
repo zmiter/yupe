@@ -1,23 +1,55 @@
-<?php $url = Yii::app()->request->hostInfo.$this->createUrl('account/recoveryPassword', array('code' => $model->code)); ?>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title><?php echo Yii::t('UserModule.user', 'Восстановление пароля для сайта {site} !', array('{site}' => CHtml::encode(Yii::app()->name))); ?></title>
+    <meta charset="UTF-8">
+    <title>
+        <?php echo Yii::t(
+            'UserModule.user', 'Reset password for site "{site}"', array(
+            '{site}' => CHtml::encode(Yii::app()->getModule('yupe')->siteName)
+        )); ?>
+    </title>
 </head>
 <body>
-    <?php echo Yii::t('UserModule.user', 'Восстановление пароля для сайта "{site}".', array('{site}' => CHtml::encode(Yii::app()->name))); ?>
-    <br/>
+<p>
+    <?php echo Yii::t(
+        'UserModule.user', 'Reset password for site "{site}"', array(
+        '{site}' => CHtml::encode(Yii::app()->getModule('yupe')->siteName)
+    )); ?>
+</p>
 
-    <?php echo Yii::t('UserModule.user', 'Кто-то, возможно Вы, запросил сброс пароля для сайта "{site}".', array('{site}' => CHtml::encode(Yii::app()->name))); ?><br/>
-    <?php echo Yii::t('UserModule.user', 'Если это были не Вы - просто удалите это письмо.'); ?>
-    <br/>
+<p>
+    <?php echo Yii::t(
+        'UserModule.user', 'Somewho, maybe you request password recovery for "{site}"', array(
+        '{site}' => CHtml::encode(Yii::app()->getModule('yupe')->siteName)
+    )); ?>
+</p>
 
-    <?php echo Yii::t('UserModule.user', 'Для восстановления пароля, пожалуйста, перейдите по'); ?>
-    <a href='<?php echo $url; ?>'><?php echo Yii::t('UserModule.user', 'ссылке'); ?></a>
+<p>
+    <?php echo Yii::t('UserModule.user', 'Just remove this letter if it addressed not for you.'); ?>
+</p>
 
-    <br/>
-    <?php echo $url; ?>
-    <br/><br/>
+<p>
+    <?php echo Yii::t(
+        'UserModule.user', 'For password recovery, please follow this :link', array(
+            ':link' => CHtml::link(
+                    Yii::t('UserModule.user', 'link'),
+                    $link = $this->createAbsoluteUrl(
+                        '/user/account/restore', array(
+                            'token' => $model->recovery->genActivateCode(),
+                        )
+                    )
+                ),
+        )
+    ); ?>
+</p>
 
-    <?php echo Yii::t('UserModule.user', 'С уважением, администрация сайта {site} !', array('{site}' => CHtml::encode(Yii::app()->name))); ?>
+<p><?php echo $link; ?></p>
+
+<hr/>
+
+<?php echo Yii::t(
+    'UserModule.user', 'Best regards, "{site}" administration!', array(
+    '{site}' => CHtml::encode(Yii::app()->getModule('yupe')->siteName)
+)); ?>
 </body>
 </html>

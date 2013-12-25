@@ -1,10 +1,32 @@
 <?php
-class CommentModule extends YWebModule
+
+/**
+ * CommentModule основной класс модуля comment
+ *
+ * @author    yupe team <team@yupe.ru>
+ * @link      http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package   yupe.modules.comment
+ * @version   0.6
+ *
+ */
+
+use yupe\components\WebModule;
+
+class CommentModule extends WebModule
 {
+    public $notifier = 'application\modules\comment\components\Notifier';
     public $defaultCommentStatus;
     public $autoApprove          = true;
     public $notify               = true;
     public $email;
+    public $import               = array();
+    public $showCaptcha = 1;
+    public $minCaptchaLength = 3;
+    public $maxCaptchaLength = 6;
+    public $rssCount         = 10;
+    public $antispamInterval = 10;
+    public $allowedTags;
 
     public function getDependencies()
     {
@@ -16,11 +38,17 @@ class CommentModule extends YWebModule
     public function getParamsLabels()
     {
         return array(
-            'defaultCommentStatus' => Yii::t('CommentModule.comment', 'Статус комментариев по умолчанию'),
-            'autoApprove'          => Yii::t('CommentModule.comment', 'Автоматическое подтверждение комментариев'),
-            'notify'               => Yii::t('CommentModule.comment', 'Уведомить о новом комментарии?'),
-            'email'                => Yii::t('CommentModule.comment', 'Email для уведомлений?'),
-            'adminMenuOrder'       => Yii::t('CommentModule.comment', 'Порядок следования в меню'),
+            'defaultCommentStatus' => Yii::t('CommentModule.comment', 'Default comments status'),
+            'autoApprove'          => Yii::t('CommentModule.comment', 'Automatic comment confirmation'),
+            'notify'               => Yii::t('CommentModule.comment', 'Notify about comment?'),
+            'email'                => Yii::t('CommentModule.comment', 'Email for notifications'),
+            'adminMenuOrder'       => Yii::t('CommentModule.comment', 'Menu items order'),
+            'showCaptcha'          => Yii::t('CommentModule.comment', 'Show captcha for guests'),
+            'minCaptchaLength'     => Yii::t('CommentModule.comment', 'Minimum captcha length'),
+            'maxCaptchaLength'     => Yii::t('CommentModule.comment', 'Maximum captcha length'),
+            'rssCount'             => Yii::t('CommentModule.comment', 'RSS records count'),
+            'allowedTags'          => Yii::t('CommentModule.comment', 'Accepted tags'),
+            'antispamInterval'     => Yii::t('CommentModule.comment', 'Antispam interval')
         );
     }
 
@@ -32,17 +60,47 @@ class CommentModule extends YWebModule
             'notify'               => $this->getChoice(),
             'email',
             'adminMenuOrder',
+            'showCaptcha'          => $this->getChoice(),
+            'minCaptchaLength',
+            'maxCaptchaLength',
+            'rssCount',
+            'allowedTags',
+            'antispamInterval'
+        );
+    }
+
+    public function getEditableParamsGroups()
+    {
+        return array(
+            'main' => array(
+                'label' => Yii::t('CommentModule.comment', 'Module general settings'),
+                'items' => array(
+                    'defaultCommentStatus',
+                    'autoApprove',
+                    'notify',
+                    'email',
+                    'adminMenuOrder',
+                )
+            ),
+            'captcha' => array(
+                'label' => Yii::t('CommentModule.comment', 'Captcha settings'),
+                'items' => array(
+                    'showCaptcha',
+                    'minCaptchaLength',
+                    'maxCaptchaLength'
+                )
+            ),
         );
     }
 
     public function getCategory()
     {
-        return Yii::t('CommentModule.comment', 'Контент');
+        return Yii::t('CommentModule.comment', 'Content');
     }
 
     public function getName()
     {
-        return Yii::t('CommentModule.comment', 'Комментарии');
+        return Yii::t('CommentModule.comment', 'Comments');
     }
 
     public function checkSelf()
@@ -52,27 +110,31 @@ class CommentModule extends YWebModule
         $messages = array();
 
         if ($count)
-            $messages[YWebModule::CHECK_NOTICE][] = array(
-                'type'    => YWebModule::CHECK_NOTICE,
-                'message' => Yii::t('CommentModule.comment', 'У Вас {{count}} новых комментариев. {{link}}', array(
-                    '{{count}}' => $count,
-                    '{{link}}'  => CHtml::link(Yii::t('CommentModule.comment', 'Модерация комментариев'), array(
-                        '/comment/default/index/order/status.asc/Comment_sort/status/',
-                    )),
-                )),
+            $messages[WebModule::CHECK_NOTICE][] = array(
+                'type'    => WebModule::CHECK_NOTICE,
+                'message' => Yii::t(
+                    'CommentModule.comment', 'You have {{count}} new comments. {{link}}', array(
+                        '{{count}}' => $count,
+                        '{{link}}'  => CHtml::link(
+                            Yii::t('CommentModule.comment', 'Comments moderation'), array(
+                                    '/comment/commentBackend/index/order/status.asc/Comment_sort/status/',
+                            )
+                        ),
+                    )
+                ),
             );
 
-        return isset($messages[YWebModule::CHECK_NOTICE]) ? $messages : true;
+        return isset($messages[WebModule::CHECK_NOTICE]) ? $messages : true;
     }
 
     public function getDescription()
     {
-        return Yii::t('CommentModule.comment', 'Модуль для простых комментариев');
+        return Yii::t('CommentModule.comment', 'Module for simple comments support');
     }
 
     public function getVersion()
     {
-        return Yii::t('CommentModule.comment', '0.4');
+        return Yii::t('CommentModule.comment', '0.5.4');
     }
 
     public function getAuthor()
@@ -98,24 +160,27 @@ class CommentModule extends YWebModule
     public function getNavigation()
     {
         return array(
-            array('icon' => 'list-alt', 'label' => Yii::t('CommentModule.comment', 'Список комментариев'), 'url'=>array('/comment/default/index')),
-            array('icon' => 'plus-sign', 'label' => Yii::t('CommentModule.comment', 'Добавить комментарий'), 'url' => array('/comment/default/create')),
+            array('icon' => 'list-alt', 'label' => Yii::t('CommentModule.comment', 'Comments list'), 'url'=>array('/comment/commentBackend/index')),
+            array('icon' => 'plus-sign', 'label' => Yii::t('CommentModule.comment', 'Create comment'), 'url' => array('/comment/commentBackend/create')),
         );
+    }
+
+    public function getAdminPageLink()
+    {
+        return '/comment/commentBackend/index';
     }
 
     public function init()
     {
         parent::init();
 
-        $this->setImport(
-            array(
-                'comment.components.*',
-                'comment.models.*',
-            )
-        );
+        $import = count($this->import) ? array_merge(array('comment.models.*',$this->import)) : array('comment.models.*');
 
-        if (!$this->email)
+        $this->setImport($import);
+
+        if (!$this->email) {
             $this->email = Yii::app()->getModule('yupe')->email;
+        }
 
         $this->defaultCommentStatus = Comment::STATUS_NEED_CHECK;
     }

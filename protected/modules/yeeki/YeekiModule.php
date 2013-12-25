@@ -1,11 +1,19 @@
 <?php
+
+
 /**
- * Yeeki module.
+ * YeekiModule основной класс модуля wiki
  *
- * Includes all necessary wiki functionality. Can be used as a module in your
- * application.
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.yeeki
+ * @since 0.1
+ *
  */
-class YeekiModule extends YWebModule
+
+
+class YeekiModule extends yupe\components\WebModule
 {
 
     public function getDependencies()
@@ -18,8 +26,8 @@ class YeekiModule extends YWebModule
     public function getParamsLabels()
     {
         return array(
-            'adminMenuOrder' => Yii::t('page', 'Порядок следования в меню'),
-            'editor'         => Yii::t('page', 'Визуальный редактор'),
+            'adminMenuOrder' => Yii::t('YeekiModule.yeeki', 'Menu items order'),
+            'editor'         => Yii::t('YeekiModule.yeeki', 'Visual Editor'),
         );
     }
 
@@ -33,42 +41,45 @@ class YeekiModule extends YWebModule
 
     public function getCategory()
     {
-        return Yii::t('menu', 'Контент');
+        return Yii::t('YeekiModule.yeeki', 'Content');
     }
 
     public function getAdminPageLink()
     {
-        return '/wiki/default/index';
+        return array(
+            '/yupe/backend/modulesettings',
+            'module' => 'yeeki',
+        );
     }
 
     public function getName()
     {
-        return Yii::t('menu', 'Wiki');
+        return Yii::t('YeekiModule.yeeki', 'Wiki');
     }
 
     public function getDescription()
     {
-        return Yii::t('menu', 'Модуль для создания раздела wiki');
+        return Yii::t('YeekiModule.yeeki', 'Module for create and manage wiki pages');
     }
 
     public function getVersion()
     {
-        return Yii::t('comment', '0.1');
+        return Yii::t('YeekiModule.yeeki', '0.1');
     }
 
     public function getAuthor()
     {
-        return Yii::t('menu', 'yupe team');
+        return Yii::t('YeekiModule.yeeki', 'yupe team');
     }
 
     public function getAuthorEmail()
     {
-        return Yii::t('menu', 'team@yupe.ru');
+        return Yii::t('YeekiModule.yeeki', 'team@yupe.ru');
     }
 
     public function getUrl()
     {
-        return Yii::t('blog', 'http://yupe.ru');
+        return Yii::t('YeekiModule.yeeki', 'http://yupe.ru');
     }
 
     public function getIcon()

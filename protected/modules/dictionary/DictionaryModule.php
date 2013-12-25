@@ -1,6 +1,16 @@
 <?php
+/**
+ * DictionaryModule основной класс модуля dictionary
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.dictionary
+ * @since 0.1
+ *
+ */
 
-class DictionaryModule extends YWebModule
+class DictionaryModule extends yupe\components\WebModule
 {
     public function getDependencies()
     {
@@ -12,23 +22,23 @@ class DictionaryModule extends YWebModule
     public function getParamsLabels()
     {
         return array(
-            'adminMenuOrder' => Yii::t('DictionaryModule.dictionary', 'Порядок следования в меню'),
+            'adminMenuOrder' => Yii::t('DictionaryModule.dictionary', 'Menu items order'),
         );
     }
 
     public function getCategory()
     {
-        return Yii::t('DictionaryModule.dictionary', 'Структура');
+        return Yii::t('DictionaryModule.dictionary', 'Structure');
     }
 
     public function getName()
     {
-        return Yii::t('DictionaryModule.dictionary', 'Справочники');
+        return Yii::t('DictionaryModule.dictionary', 'Dictionaries');
     }
 
     public function getDescription()
     {
-        return Yii::t('DictionaryModule.dictionary', 'Модуль для простых справочников');
+        return Yii::t('DictionaryModule.dictionary', 'Module for simple dictionary');
     }
 
     public function getAuthor()
@@ -51,15 +61,20 @@ class DictionaryModule extends YWebModule
         return Yii::t('DictionaryModule.dictionary', '0.2');
     }
 
+    public function getAdminPageLink()
+    {
+        return '/dictionary/dictionaryBackend/index';
+    }
+
     public function getNavigation()
     {
         return array(
-            array('label' => Yii::t('DictionaryModule.dictionary', 'Справочники')),
-            array('icon' => 'list-alt', 'label' => Yii::t('DictionaryModule.dictionary', 'Список справочников'), 'url' => array('/dictionary/default/index')),
-            array('icon' => 'plus-sign', 'label' => Yii::t('DictionaryModule.dictionary', 'Добавить справочник'), 'url' => array('/dictionary/default/create')),
-            array('label' => Yii::t('DictionaryModule.dictionary', 'Значения')),
-            array('icon' => 'list-alt', 'label' => Yii::t('DictionaryModule.dictionary', 'Список значений'), 'url' => array('/dictionary/dictionaryData/index')),
-            array('icon' => 'plus-sign', 'label' => Yii::t('DictionaryModule.dictionary', 'Добавить значение'), 'url' => array('/dictionary/dictionaryData/create')),
+            array('label' => Yii::t('DictionaryModule.dictionary', 'Dictionaries')),
+            array('icon' => 'list-alt', 'label' => Yii::t('DictionaryModule.dictionary', 'Dictionaries list'), 'url' => array('/dictionary/dictionaryBackend/index')),
+            array('icon' => 'plus-sign', 'label' => Yii::t('DictionaryModule.dictionary', 'Create dictionary'), 'url' => array('/dictionary/dictionaryBackend/create')),
+            array('label' => Yii::t('DictionaryModule.dictionary', 'Items')),
+            array('icon' => 'list-alt', 'label' => Yii::t('DictionaryModule.dictionary', 'Items list'), 'url' => array('/dictionary/dictionaryDataBackend/index')),
+            array('icon' => 'plus-sign', 'label' => Yii::t('DictionaryModule.dictionary', 'Create item'), 'url' => array('/dictionary/dictionaryDataBackend/create')),
         );
     }
 

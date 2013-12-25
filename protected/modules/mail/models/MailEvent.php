@@ -1,14 +1,4 @@
 <?php
-/**
- * MailEvent model class
- * Класс модели MailEvent
- *
- * @category YupeModel
- * @package  YupeCMS
- * @author   YupeTeam <team@yupe.ru>
- * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
- * @link     http://yupe.ru
- **/
 
 /**
  * This is the model class for table "mail_event".
@@ -27,7 +17,7 @@
  * Класс модели MailEvent
  *
  * @category YupeModel
- * @package  YupeCMS
+ * @package  yupe.modules.models
  * @author   YupeTeam <team@yupe.ru>
  * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
  * @link     http://yupe.ru
@@ -53,7 +43,7 @@ class MailEvent extends YModel
      */
     public function tableName()
     {
-        return '{{mail_event}}';
+        return '{{mail_mail_event}}';
     }
 
     /**
@@ -101,10 +91,23 @@ class MailEvent extends YModel
     {
         return array(
             'id'          => Yii::t('MailModule.mail', 'ID'),
-            'code'        => Yii::t('MailModule.mail', 'Символьный код'),
-            'name'        => Yii::t('MailModule.mail', 'Название'),
-            'description' => Yii::t('MailModule.mail', 'Описание'),
+            'code'        => Yii::t('MailModule.mail', 'Symbolic code'),
+            'name'        => Yii::t('MailModule.mail', 'Title'),
+            'description' => Yii::t('MailModule.mail', 'Description'),
         );
+    }
+
+    /**
+     * Получение короткого описания:
+     *
+     * @return string short decription
+     **/
+    public function getShortDescription()
+    {
+        if (strlen($this->description) <= 100)
+            return $this->description;
+        else
+            return substr($this->description, 0, 100) . " ...";
     }
 
     /**

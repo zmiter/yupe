@@ -1,4 +1,14 @@
 <?php
+/**
+ * Валидатор заполненности поля
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.yupe.components.validators
+ * @since 0.1
+ *
+ */
 class YRequiredValidator extends CValidator
 {
     public $requiredValue;
@@ -9,8 +19,9 @@ class YRequiredValidator extends CValidator
     {
         $value = $object->$attribute;
 
-        if ($this->allowEmpty && $this->isEmpty($value))
+        if ($this->allowEmpty && $this->isEmpty($value)) {
             return;
+        }
 
         if ($this->requiredValue !== null)
         {
@@ -18,7 +29,7 @@ class YRequiredValidator extends CValidator
             {
                 $message = ($this->message !== null)
                     ? $this->message
-                    : Yii::t('YupeModule.yupe', '{attribute} must be {value}.', array('{value}' => $this->requiredValue));
+                    : Yii::t('YupeModule.yupe', '{attribute} must be {value}', array('{value}' => $this->requiredValue));
 
                 $this->addError($object, $attribute, $message);
             }
@@ -27,7 +38,7 @@ class YRequiredValidator extends CValidator
         {
             $message = ($this->message !== null)
                 ? $this->message
-                : Yii::t('YupeModule.yupe', '{attribute} cannot be blank.');
+                : Yii::t('YupeModule.yupe', '{attribute} cannot be blank');
 
             $this->addError($object, $attribute, $message);
         }

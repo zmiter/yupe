@@ -1,9 +1,17 @@
 <?php
+/**
+ * PageModule основной класс модуля page
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.page
+ * @since 0.1
+ *
+ */
 
-class PageModule extends YWebModule
+class PageModule extends yupe\components\WebModule
 {
-    public $mainCategory;
-
     public function getDependencies()
     {
         return array(
@@ -15,15 +23,15 @@ class PageModule extends YWebModule
     public function getParamsLabels()
     {
         return array(
-            'adminMenuOrder' => Yii::t('PageModule.page', 'Порядок следования в меню'),
-            'editor'         => Yii::t('PageModule.page', 'Визуальный редактор'),
-            'mainCategory'   => Yii::t('PageModule.page', 'Главная категория страниц'),
+            'adminMenuOrder' => Yii::t('PageModule.page', 'Menu items order'),
+            'editor'         => Yii::t('PageModule.page', 'Visual editor'),
+            'mainCategory'   => Yii::t('PageModule.page', 'Main pages category'),
         );
     }
 
     public function  getVersion()
     {
-        return Yii::t('PageModule.page', '0.3');
+        return Yii::t('PageModule.page', '0.5');
     }
 
     public function getEditableParams()
@@ -42,17 +50,17 @@ class PageModule extends YWebModule
 
     public function getCategory()
     {
-        return Yii::t('PageModule.page', 'Контент');
+        return Yii::t('PageModule.page', 'Content');
     }
 
     public function getName()
     {
-        return Yii::t('PageModule.page', 'Страницы');
+        return Yii::t('PageModule.page', 'Pages');
     }
 
     public function getDescription()
     {
-        return Yii::t('PageModule.page', 'Модуль для создания и редактирования страничек сайта');
+        return Yii::t('PageModule.page', 'Module for creating and manage static pages');
     }
 
     public function getAuthor()
@@ -80,37 +88,31 @@ class PageModule extends YWebModule
         parent::init();
 
         $this->setImport(array(
-              'application.modules.page.models.*',
-              'application.modules.page.components.*',
+              'application.modules.page.models.*',              
               'application.modules.page.components.widgets.*',
-         ));
+        ));
 
         // Если у модуля не задан редактор - спросим у ядра
-        if (!$this->editor)
+        if (!$this->editor) {
             $this->editor = Yii::app()->getModule('yupe')->editor;
+        }
     }
 
     public function isMultiLang()
     {
         return true;
-    }
+    }   
 
-    public function getCategoryList()
+    public function getAdminPageLink()
     {
-        $criteria = array('order' => 'id ASC');
-        if ($this->mainCategory)
-            $criteria += array(
-                'condition' => 'id = :id OR parent_id = :id',
-                'params'    => array(':id' => $this->mainCategory),
-            );
-        return Category::model()->findAll($criteria);
+        return '/page/pageBackend/index';
     }
 
     public function getNavigation()
     {
         return array(
-            array('icon' => 'list-alt', 'label' => Yii::t('PageModule.page', 'Управление страницами'), 'url' => array('/page/default/index')),
-            array('icon' => 'plus-sign', 'label' => Yii::t('PageModule.page', 'Добавить страницу'), 'url' => array('/page/default/create')),
+            array('icon' => 'list-alt', 'label' => Yii::t('PageModule.page', 'Pages list'), 'url' => array('/page/pageBackend/index')),
+            array('icon' => 'plus-sign', 'label' => Yii::t('PageModule.page', 'Create page'), 'url' => array('/page/pageBackend/create')),
         );
     }
 }

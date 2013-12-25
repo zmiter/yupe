@@ -1,16 +1,15 @@
-<?php ?>
 <legend>
     <?php
     echo Yii::t(
-        'YupeModule.yupe', 'Найдены следующие миграции для модуля "{moduleID}"',
+        'YupeModule.yupe', 'Migrations was founded for module "{moduleID}"',
         array(
-            '{moduleID}' => ucfirst($module->id),
+            '{moduleID}' => ucfirst($module->getId()),
         )
     );?> :
 </legend>
 <?php
 $newUpdates = array();
-if (isset($updates[$module->id]) && ($updates=$updates[$module->id])) {
+if (isset($updates[$module->getId()]) && ($updates=$updates[$module->getId()])) {
     foreach ($updates as $u) {
         $newUpdates[] = array(
             'id'       => count($newUpdates) + 1,
@@ -35,7 +34,7 @@ if (isset($updates[$module->id]) && ($updates=$updates[$module->id])) {
                     ),
                     array(
                         'name'   => 'fileName',
-                        'header' => Yii::t('YupeModule.yupe', 'Файл'),
+                        'header' => Yii::t('YupeModule.yupe', 'File'),
                     ),
                 ),
             )
@@ -51,11 +50,11 @@ if (isset($updates[$module->id]) && ($updates=$updates[$module->id])) {
             $this->widget(
                 'bootstrap.widgets.TbButton', array(
                     'buttonType' => 'submit',
-                    'label'      => Yii::t('YupeModule.yupe', 'Обновить'),
+                    'label'      => Yii::t('YupeModule.yupe', 'Refresh'),
                 )
             );
         $this->endWidget();
-        //<form action="#" method="post"><input type="submit" value="<?php echo Yii::t('YupeModule.yupe','Обновить');? >"></form>
+       
         ?>
         </div>
     </div>

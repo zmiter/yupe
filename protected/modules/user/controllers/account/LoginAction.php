@@ -1,25 +1,12 @@
 <?php
 /**
- * File Doc Comment:
- * Файл класса LoginAction, который расширяет возможности стандартного CAction
+ * Экшн, отвечающий за авторизацию пользователя
  *
- * @category YupeControllerActions
- * @package  YupeCMS
+ * @category YupeComponents
+ * @package  yupe.modules.user.controllers.account
  * @author   YupeTeam <team@yupe.ru>
  * @license  BSD http://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F_BSD
- * @version  0.5 (dev)
- * @link     http://yupe.ru
- *
- **/
-
-/**
- * Файл класса LoginAction, который расширяет возможности стандартного CAction
- *
- * @category YupeControllerActions
- * @package  YupeCMS
- * @author   YupeTeam <team@yupe.ru>
- * @license  BSD http://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F_BSD
- * @version  0.5 (dev)
+ * @version  0.5.3
  * @link     http://yupe.ru
  *
  **/
@@ -32,20 +19,31 @@ class LoginAction extends CAction
      **/
     public function run()
     {
-        $form = new LoginForm;
+        if (Yii::app()->user->isAuthenticated()) {
+            $this->controller->redirect(Yii::app()->user->returnUrl);
+        }
 
-        if (Yii::app()->request->isPostRequest && !empty($_POST['LoginForm'])) {
-            $form->setAttributes($_POST['LoginForm']);
+        /**
+         * Если было совершено больше 3х попыток входа
+         * в систему, используем сценарий с капчей:
+         **/
 
-            if ($form->validate()) {
+        $badLoginCount = Yii::app()->authenticationManager->getBadLoginCount(Yii::app()->user);
+
+        //@TODO 3 вынести в настройки модуля
+        $scenario = $badLoginCount > 3 ? 'loginLimit' : '';
+
+        $form = new LoginForm($scenario);
+
+        if (Yii::app()->getRequest()->getIsPostRequest() && !empty($_POST['LoginForm'])) {
+
+            $form->setAttributes(Yii::app()->request->getPost('LoginForm'));
+
+            if ($form->validate() && Yii::app()->authenticationManager->login($form, Yii::app()->user, Yii::app()->request)) {
+
                 Yii::app()->user->setFlash(
-                    YFlashMessages::NOTICE_MESSAGE,
-                    Yii::t('UserModule.user', 'Вы успешно авторизовались!')
-                );
-
-                Yii::log(
-                    Yii::t('UserModule.user', 'Пользователь {email} авторизовался!', array('{email}' => $form->email)),
-                    CLogger::LEVEL_INFO, UserModule::$logCategory
+                    YFlashMessages::SUCCESS_MESSAGE,
+                    Yii::t('UserModule.user', 'You authorized successfully!')
                 );
 
                 $module = Yii::app()->getModule('user');
@@ -54,19 +52,18 @@ class LoginAction extends CAction
                     ? array($module->loginAdminSuccess)
                     : array($module->loginSuccess);
 
-                $this->controller->redirect($redirect);
+                Yii::app()->authenticationManager->setBadLoginCount(Yii::app()->user, 0);
+
+                $this->controller->redirect(Yii::app()->user->getReturnUrl($redirect));
+
+            } else {
+
+                $form->addError('hash', Yii::t('UserModule.user', 'Email or password was typed wrong!'));
+
+                Yii::app()->authenticationManager->setBadLoginCount(Yii::app()->user, $badLoginCount + 1);
+
             }
-            else
-                Yii::log(
-                    Yii::t(
-                        'user', 'Ошибка авторизации! email => {email}, Password => {password}!', array(
-                            '{email}' => $form->email,
-                            '{password}' => $form->password
-                        )
-                    ),
-                    CLogger::LEVEL_ERROR, UserModule::$logCategory
-                );
         }
-        $this->controller->render('login', array('model' => $form));
+        $this->controller->render($this->id, array('model' => $form));
     }
 }

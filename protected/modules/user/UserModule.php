@@ -1,72 +1,133 @@
 <?php
-class UserModule extends YWebModule
+
+/**
+ * UserModule основной класс модуля user
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.user
+ * @since 0.1
+ *
+ */
+
+
+use yupe\components\WebModule;
+
+class UserModule extends WebModule
 {
     public $accountActivationSuccess       = '/user/account/login';
     public $accountActivationFailure       = '/user/account/registration';
     public $loginSuccess;
-    public $registrationSucess             = '/user/account/login';
+    public $registrationSuccess            = '/user/account/login';
     public $loginAdminSuccess              = '';
     public $logoutSuccess;
+    public $sessionLifeTime                = 7;
 
     public $notifyEmailFrom;
     public $autoRecoveryPassword           = true;
-    public $minPasswordLength              = 3;
+    public $recoveryDisabled               = false;
+    public $registrationDisabled           = false;
+    public $minPasswordLength              = 8;
     public $emailAccountVerification       = true;
-    public $showCaptcha                    = true;
+    public $showCaptcha                    = false;
     public $minCaptchaLength               = 3;
     public $maxCaptchaLength               = 6;
     public $documentRoot;
-    public $avatarsDir;
+    public $avatarsDir                     = 'avatars';
     public $avatarMaxSize                  = 10000;
     public $defaultAvatar                  = '/web/images/avatar.png';
     public $avatarExtensions               = array('jpg', 'png', 'gif');
-    public $invalidIpAction                = '/user/account/notAllowedIp';
-    public $invalidEmailAction             = '/user/account/notallowedemail';
-    public $ipBlackList;
-    public $emailBlackList;
 
-    public $registrationMailEventActivate  = 'USER_REGISTRATION_ACTIVATE';
+    public $registrationActivateMailEvent  = 'USER_REGISTRATION_ACTIVATE';
     public $registrationMailEvent          = 'USER_REGISTRATION';
     public $passwordAutoRecoveryMailEvent  = 'USER_PASSWORD_AUTO_RECOVERY';
     public $passwordRecoveryMailEvent      = 'USER_PASSWORD_RECOVERY';
-    public $passwordSuccessRecovery        = 'USER_PASSWORD_SUCCESS_RECOVERY';
-    public $userAccountActivationMailEvent = 'USER_ACCOUNT_ACTIVATION';
+    public $passwordSuccessRecoveryMailEvent = 'USER_PASSWORD_SUCCESS_RECOVERY';
+    public $userAccountActivationMailEvent   = 'USER_ACCOUNT_ACTIVATION';
 
-    public static $logCategory             = 'application.modules.user';
-    public $autoNick                       = false;
+    public static $logCategory             = 'application.modules.user';    
     public $profiles                       = array();
     public $attachedProfileEvents          = array();
+
+    public function getUploadPath()
+    {
+        return  Yii::getPathOfAlias('webroot') . '/' .
+            Yii::app()->getModule('yupe')->uploadPath . '/' .
+            $this->avatarsDir . '/';
+    }
+
+    public function getInstall()
+    {
+        if(parent::getInstall()) {
+            @mkdir($this->getUploadPath(),0755);
+        }
+
+        return false;
+    }
+
+    public function checkSelf()
+    {
+       $messages = array();
+
+       if (!$this->avatarsDir) {
+             $messages[WebModule::CHECK_ERROR][] = array(
+                'type'    => WebModule::CHECK_ERROR,
+                'message' => Yii::t('UserModule.user', 'Please, choose avatars directory! {link}', array(
+                    '{link}' => CHtml::link(Yii::t('UserModule.user', 'Edit module settings'), array(
+                        '/yupe/backend/modulesettings/',
+                        'module' => $this->id,
+                     )),
+                )),            
+            );
+        }
+
+        if (!is_dir($this->getUploadPath()) || !is_writable($this->getUploadPath())) {
+            $messages[WebModule::CHECK_ERROR][] = array(
+                'type'    => WebModule::CHECK_ERROR,
+                'message' => Yii::t('UserModule.user', 'Directory is not accessible "{dir}" for write or not exists! {link}', array(
+                    '{dir}' => $this->getUploadPath(),
+                    '{link}' => CHtml::link(Yii::t('UserModule.user', 'Edit module settings'), array(
+                        '/yupe/backend/modulesettings/',
+                        'module' => $this->id,
+                    )),
+                )),
+            );
+        }
+
+        return (isset($messages[WebModule::CHECK_ERROR])) ? $messages : true;
+    }
 
     public function getParamsLabels()
     {
         return array(
-            'userAccountActivationMailEvent' => Yii::t('UserModule.user', 'Почтовое событие при успешной активации пользователя'),
-            'passwordSuccessRecovery'        => Yii::t('UserModule.user', 'Почтовое событие при успешном восстановлении пароля'),
-            'passwordAutoRecoveryMailEvent'  => Yii::t('UserModule.user', 'Почтовое событие при автоматическом восстановлении пароля'),
-            'passwordRecoveryMailEvent'      => Yii::t('UserModule.user', 'Почтовое событие при восстановлении пароля'),
-            'registrationMailEventActivate'  => Yii::t('UserModule.user', 'Почтовое событие при регистрации нового пользователя с активацией'),
-            'registrationMailEvent'          => Yii::t('UserModule.user', 'Почтовое событие при регистрации нового пользователя без активации'),
-            'adminMenuOrder'                 => Yii::t('UserModule.user', 'Порядок следования в меню'),
-            'accountActivationSuccess'       => Yii::t('UserModule.user', 'Страница после активации аккаунта'),
-            'accountActivationFailure'       => Yii::t('UserModule.user', 'Страница неудачной активации аккаунта'),
-            'loginSuccess'                   => Yii::t('UserModule.user', 'Страница после авторизации'),
-            'logoutSuccess'                  => Yii::t('UserModule.user', 'Страница после выхода с сайта'),
-            'notifyEmailFrom'                => Yii::t('UserModule.user', 'Email от имени которого отправлять сообщение'),
-            'autoRecoveryPassword'           => Yii::t('UserModule.user', 'Автоматическое восстановление пароля'),
-            'minPasswordLength'              => Yii::t('UserModule.user', 'Минимальная длина пароля'),
-            'emailAccountVerification'       => Yii::t('UserModule.user', 'Подтверждать аккаунт по Email'),
-            'showCaptcha'                    => Yii::t('UserModule.user', 'Показывать капчу при регистрации'),
-            'minCaptchaLength'               => Yii::t('UserModule.user', 'Минимальная длина капчи'),
-            'maxCaptchaLength'               => Yii::t('UserModule.user', 'Максимальная длина капчи'),
-            'documentRoot'                   => Yii::t('UserModule.user', 'Корень сервера'),
-            'avatarsDir'                     => Yii::t('UserModule.user', 'Каталог для загрузки аватарок'),
-            'avatarMaxSize'                  => Yii::t('UserModule.user', 'Максимальный размер аватарки'),
-            'defaultAvatar'                  => Yii::t('UserModule.user', 'Пустой аватар'),
-            'invalidIpAction'                => Yii::t('UserModule.user', 'Страница для заблокированных IP'),
-            'invalidEmailAction'             => Yii::t('UserModule.user', 'Страница для заблокированных Email'),
-            'loginAdminSuccess'              => Yii::t('UserModule.user', 'Страница после авторизации админстратора'),
-            'registrationSucess'             => Yii::t('UserModule.user', 'Страница после успешной регистрации'),
-            'autoNick'                       => Yii::t('UserModule.user', 'Автоматически генерировать уникальный ник и не требовать его указания'),
+            'userAccountActivationMailEvent'   => Yii::t('UserModule.user', 'Mail event when user was activated successfully'),
+            'passwordSuccessRecoveryMailEvent' => Yii::t('UserModule.user', 'Mail event when password was recovered successfully'),
+            'passwordAutoRecoveryMailEvent'  => Yii::t('UserModule.user', 'Mail event for automatic password recovery'),
+            'passwordRecoveryMailEvent'      => Yii::t('UserModule.user', 'Mail event for password recovery'),
+            'registrationActivateMailEvent'  => Yii::t('UserModule.user', 'Mail event when new user was registered'),
+            'registrationMailEvent'          => Yii::t('UserModule.user', 'Mail event when new user was registered without activation'),
+            'adminMenuOrder'                 => Yii::t('UserModule.user', 'Menu items order'),
+            'accountActivationSuccess'       => Yii::t('UserModule.user', 'Page after account activation'),
+            'accountActivationFailure'       => Yii::t('UserModule.user', 'Page after activation error'),
+            'loginSuccess'                   => Yii::t('UserModule.user', 'Page after authorization'),
+            'logoutSuccess'                  => Yii::t('UserModule.user', 'Page after login'),
+            'notifyEmailFrom'                => Yii::t('UserModule.user', 'From which email send a message'),
+            'autoRecoveryPassword'           => Yii::t('UserModule.user', 'Automatic password recovery'),
+            'recoveryDisabled'               => Yii::t('UserModule.user', 'Disable password recovery'),
+            'registrationDisabled'           => Yii::t('UserModule.user', 'Disable registration'),
+            'minPasswordLength'              => Yii::t('UserModule.user', 'Minimum password length'),
+            'emailAccountVerification'       => Yii::t('UserModule.user', 'Confirm account by Email'),
+            'showCaptcha'                    => Yii::t('UserModule.user', 'Show captcha on registration'),
+            'minCaptchaLength'               => Yii::t('UserModule.user', 'Minimum captcha length'),
+            'maxCaptchaLength'               => Yii::t('UserModule.user', 'Maximum captcha length'),
+            'documentRoot'                   => Yii::t('UserModule.user', 'Server root'),
+            'avatarsDir'                     => Yii::t('UserModule.user', 'Directory for avatar uploading'),
+            'avatarMaxSize'                  => Yii::t('UserModule.user', 'Maximum avatar size'),
+            'defaultAvatar'                  => Yii::t('UserModule.user', 'Empty avatar'),
+            'loginAdminSuccess'              => Yii::t('UserModule.user', 'Page after admin authorization'),
+            'registrationSuccess  '             => Yii::t('UserModule.user', 'Page after success register'),
+            'sessionLifeTime'                => Yii::t('UserModule.user', 'Session lifetime (in days) when "Remember me" options enabled'),
         );
     }
 
@@ -75,19 +136,20 @@ class UserModule extends YWebModule
         return array(
             'userAccountActivationMailEvent',
             'passwordRecoveryMailEvent',
-            'passwordSuccessRecovery',
+            'passwordSuccessRecoveryMailEvent',
             'passwordAutoRecoveryMailEvent',
-            'registrationMailEventActivate',
+            'registrationActivateMailEvent',
             'registrationMailEvent',
             'avatarMaxSize',
             'defaultAvatar',
             'avatarsDir',
-            'minCaptchaLength',
-            'maxCaptchaLength',
             'showCaptcha'              => $this->getChoice(),
-            'emailAccountVerification' => $this->getChoice(),
+            'minCaptchaLength',
+            'maxCaptchaLength',            
             'minPasswordLength',
             'autoRecoveryPassword'     => $this->getChoice(),
+            'recoveryDisabled'         => $this->getChoice(),
+            'registrationDisabled'     => $this->getChoice(),
             'notifyEmailFrom',
             'logoutSuccess',
             'loginSuccess',
@@ -95,19 +157,78 @@ class UserModule extends YWebModule
             'accountActivationSuccess',
             'accountActivationFailure',
             'loginAdminSuccess',
-            'registrationSucess',
-            'autoNick'                 => $this->getChoice(),
+            'registrationSuccess  ',
+            'sessionLifeTime'
         );
+    }
+
+    public function getEditableParamsGroups()
+    {
+        return array(
+            'main' => array(
+                'label' => Yii::t('UserModule.user', 'General module settings'),
+                'items' => array(
+                    'adminMenuOrder',
+                    'sessionLifeTime'
+                )
+            ),
+            'security' => array(
+                'label' => Yii::t('UserModule.user', 'Security settings'),
+                'items' => array(
+                	'registrationDisabled',
+                    'emailAccountVerification',
+                    'minPasswordLength',
+                    'autoRecoveryPassword',
+                    'recoveryDisabled',
+                )
+            ),
+            'captcha' => array(
+                'label' => Yii::t('UserModule.user', 'Captcha settings'),
+                'items' => array(
+                    'showCaptcha',
+                    'minCaptchaLength',
+                    'maxCaptchaLength'
+                )
+            ),
+            'mail' => array(
+                'label' => Yii::t('UserModule.user','Mail notices'),
+                'items' => array(
+                    'notifyEmailFrom',
+                    'userAccountActivationMailEvent',
+                    'passwordRecoveryMailEvent',
+                    'passwordSuccessRecoveryMailEvent',
+                    'passwordAutoRecoveryMailEvent',
+                    'registrationActivateMailEvent',
+                    'registrationMailEvent',
+                )
+            ),
+            'redirects' => array(
+                'label' => Yii::t('UserModule.user','Redirecting'),
+                'items' => array(
+                    'logoutSuccess',
+                    'loginSuccess',
+                    'accountActivationSuccess',
+                    'accountActivationFailure',
+                    'loginAdminSuccess',
+                    'registrationSuccess'
+                )
+            ),
+        );
+    }
+
+    public function getAdminPageLink()
+    {
+        return '/user/userBackend/index';
     }
 
     public function getNavigation()
     {
         return array(
-            array('label' => Yii::t('UserModule.user', 'Пользователи')),
-            array('icon' => 'list-alt', 'label' => Yii::t('UserModule.user', 'Управление пользователями'), 'url' => array('/user/default/index')),
-            array('icon' => 'plus-sign', 'label' => Yii::t('UserModule.user', 'Добавление пользователя'), 'url' => array('/user/default/create')),
-            array('label' => Yii::t('UserModule.user', 'Восстановления паролей')),
-            array('icon' => 'list-alt', 'label' => Yii::t('UserModule.user', 'Восстановления паролей'), 'url' => array('/user/recoveryPassword/index')),
+            array('label' => Yii::t('UserModule.user', 'Users')),
+            array('icon' => 'list-alt', 'label' => Yii::t('UserModule.user', 'Manage users'), 'url' => array('/user/userBackend/index')),
+            array('icon' => 'plus-sign', 'label' => Yii::t('UserModule.user', 'Create user'), 'url' => array('/user/userBackend/create')),
+            array('label' => Yii::t('UserModule.user', 'Tokens')),
+            array('icon' => 'list-alt', 'label' => Yii::t('UserModule.user', 'Token list'), 'url' => array('/user/tokensBackend/index')),
         );
     }
 
@@ -123,17 +244,17 @@ class UserModule extends YWebModule
 
     public function getName()
     {
-        return Yii::t('UserModule.user', 'Пользователи');
+        return Yii::t('UserModule.user', 'Users');
     }
 
     public function getCategory()
     {
-        return Yii::t('UserModule.user', 'Пользователи');
+        return Yii::t('UserModule.user', 'Yupe!');
     }
 
     public function getDescription()
     {
-        return Yii::t('UserModule.user', 'Модуль для управления пользователями, регистрацией и авторизацией');
+        return Yii::t('UserModule.user', 'Module for user registration and authorization management');
     }
 
     public function getAuthor()
@@ -153,7 +274,7 @@ class UserModule extends YWebModule
 
     public function getVersion()
     {
-        return Yii::t('UserModule.user', '0.3');
+        return Yii::t('UserModule.user', '0.6');
     }
 
     public function getIcon()
@@ -165,11 +286,11 @@ class UserModule extends YWebModule
     {
         return array(
             'isAuthenticated' => array(
-                'name'      => 'Авторизован',
+                'name'      => Yii::t('UserModule.user','Authorized'),
                 'condition' => Yii::app()->user->isAuthenticated(),
             ),
             'isSuperUser'     => array(
-                'name'      => 'Администратор',
+                'name'      => Yii::t('UserModule.user','Administrator'),
                 'condition' => Yii::app()->user->isSuperUser(),
             ),
         );
@@ -179,17 +300,10 @@ class UserModule extends YWebModule
     {
         parent::init();
 
-        $homeUrl = '/' . Yii::app()->defaultController . '/index';
-
-        if (!$this->loginSuccess)
-            $this->loginSuccess = $homeUrl;
-
-        if (!$this->logoutSuccess)
-            $this->logoutSuccess = $homeUrl;
-
         $this->setImport(array(
             'user.models.*',
             'user.components.*',
+            'user.widgets.AvatarWidget'
         ));
 
         if (is_array($this->attachedProfileEvents))
@@ -202,26 +316,6 @@ class UserModule extends YWebModule
         }
     }
 
-    public function isAllowedEmail($email)
-    {
-        if (is_array($this->emailBlackList) && count($this->emailBlackList))
-        {
-            if (in_array(trim($email), $this->emailBlackList))
-                return false;
-        }
-        return true;
-    }
-
-    public function isAllowedIp($ip)
-    {
-        if (is_array($this->ipBlackList) && count($this->ipBlackList))
-        {
-            if (in_array($ip, $this->ipBlackList))
-                return false;
-        }
-        return true;
-    }
-
     public function onBeginRegistration($event)
     {
         $this->raiseEvent('onBeginRegistration', $event);
@@ -231,4 +325,5 @@ class UserModule extends YWebModule
     {
         $this->raiseEvent('onBeginProfile', $event);
     }
+
 }

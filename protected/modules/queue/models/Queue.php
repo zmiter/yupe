@@ -1,6 +1,19 @@
 <?php
 
 /**
+ * Queue модель для работы с табличкой очереди
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.queue.models
+ * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
+ * @since 0.1
+ *
+ */
+
+
+/**
  * This is the model class for table "queue".
  *
  * The followings are the available columns in table 'queue':
@@ -27,8 +40,9 @@ class Queue extends YModel
 
     public function beforeSave()
     {
-        if ($this->isNewRecord)
+        if ($this->isNewRecord) {
             $this->create_time = new CDbExpression('NOW()');
+        }
         return parent::beforeSave();
     }
 
@@ -49,7 +63,7 @@ class Queue extends YModel
      */
     public function tableName()
     {
-        return '{{queue}}';
+        return '{{queue_queue}}';
     }
 
     /**
@@ -64,7 +78,7 @@ class Queue extends YModel
             array('status, worker, priority', 'numerical', 'integerOnly' => true),
             array('status', 'in', 'range'  => array_keys($this->statusList)),
             array('priority', 'in', 'range' => array_keys($this->priorityList)),
-            array('notice', 'length', 'max' => 300),
+            array('notice', 'length', 'max' => 255),
             array('start_time, complete_time', 'safe'),
             // The following rule is used by search().
             // Please remove those attributes that should not be searched.
@@ -79,14 +93,14 @@ class Queue extends YModel
     {
         return array(
             'id'            => Yii::t('QueueModule.queue', 'ID'),
-            'worker'        => Yii::t('QueueModule.queue', 'Обработчик'),
-            'create_time'   => Yii::t('QueueModule.queue', 'Создано'),
-            'task'          => Yii::t('QueueModule.queue', 'Задача'),
-            'start_time'    => Yii::t('QueueModule.queue', 'Начало'),
-            'complete_time' => Yii::t('QueueModule.queue', 'Завершение'),
-            'status'        => Yii::t('QueueModule.queue', 'Статус'),
-            'notice'        => Yii::t('QueueModule.queue', 'Примечание'),
-            'priority'      => Yii::t('QueueModule.queue', 'Приоритет'),
+            'worker'        => Yii::t('QueueModule.queue', 'Handler'),
+            'create_time'   => Yii::t('QueueModule.queue', 'Created at'),
+            'task'          => Yii::t('QueueModule.queue', 'Task.'),
+            'start_time'    => Yii::t('QueueModule.queue', 'Start'),
+            'complete_time' => Yii::t('QueueModule.queue', 'Completing'),
+            'status'        => Yii::t('QueueModule.queue', 'Status'),
+            'notice'        => Yii::t('QueueModule.queue', 'Notice'),
+            'priority'      => Yii::t('QueueModule.queue', 'Priority'),
         );
     }
 
@@ -118,31 +132,31 @@ class Queue extends YModel
         public function getPriorityList()
     {
         return array(
-            self::PRIORITY_LOW    => Yii::t('QueueModule.queue', 'Низкий'),
-            self::PRIORITY_NORMAL => Yii::t('QueueModule.queue', 'Нормальный'),
-            self::PRIORITY_HIGH   => Yii::t('QueueModule.queue', 'Высокий'),
+            self::PRIORITY_LOW    => Yii::t('QueueModule.queue', 'Low'),
+            self::PRIORITY_NORMAL => Yii::t('QueueModule.queue', 'Normal'),
+            self::PRIORITY_HIGH   => Yii::t('QueueModule.queue', 'High'),
         );
     }
 
     public function getPriority()
     {
         $data = $this->priorityList;
-        return isset($data[$this->priority]) ? $data[$this->priority] : Yii::t('QueueModule.queue', '-неизвестно-');
+        return isset($data[$this->priority]) ? $data[$this->priority] : Yii::t('QueueModule.queue', '-unknown-');
     }
 
     public function getStatusList()
     {
         return array(
-            self::STATUS_NEW      => Yii::t('QueueModule.queue', 'Новая'),
-            self::STATUS_COMLETED => Yii::t('QueueModule.queue', 'Выполнена'),
-            self::STATUS_PROGRESS => Yii::t('QueueModule.queue', 'В работе'),
-            self::STATUS_ERROR    => Yii::t('QueueModule.queue', 'Ошибка'),
+            self::STATUS_NEW      => Yii::t('QueueModule.queue', 'New'),
+            self::STATUS_COMLETED => Yii::t('QueueModule.queue', 'Completed'),
+            self::STATUS_PROGRESS => Yii::t('QueueModule.queue', 'Working'),
+            self::STATUS_ERROR    => Yii::t('QueueModule.queue', 'Error'),
         );
     }
 
     public function getStatus()
     {
         $data = $this->statusList;
-        return isset($data[$this->status]) ? $data[$this->status] : Yii::t('QueueModule.queue', '-неизвестно-');
+        return isset($data[$this->status]) ? $data[$this->status] : Yii::t('QueueModule.queue', '-unknown-');
     }
 }

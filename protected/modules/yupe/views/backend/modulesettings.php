@@ -1,24 +1,24 @@
 <?php
 $this->breadcrumbs = array(
-    Yii::t('YupeModule.yupe', 'Система') => array('settings'),
-    Yii::t('YupeModule.yupe', 'Настройки') => array('settings'),
+    Yii::t('YupeModule.yupe', 'System') => array('settings'),
+    Yii::t('YupeModule.yupe', 'Modules') => array('settings'),
     $module->name,
 );
 ?>
 
 <h1>
-    <?php echo Yii::t('YupeModule.yupe', 'Настройки модуля'); ?> "<?php echo $module->name; ?>"
-    <small><?php echo Yii::t('YupeModule.yupe','версии'); ?> <?php echo $module->version; ?></small>
+    <?php echo Yii::t('YupeModule.yupe', 'Module settings'); ?> "<?php echo $module->name; ?>"
+    <small><?php echo Yii::t('YupeModule.yupe','version'); ?> <?php echo $module->version; ?></small>
 </h1>
 
 <br/>
 
 <?php if (is_array($elements) && count($elements)): ?>
-    <?php echo CHtml::beginForm(array('/yupe/backend/saveModulesettings', 'post'), 'post', array(
+    <?php echo CHtml::beginForm(array('/yupe/backend/saveModulesettings'), 'post', array(
         'class' => 'well',
     )); ?>
         <fieldset class="inline">
-            <?php echo CHtml::hiddenField('module_id', $module->id); ?>
+            <?php echo CHtml::hiddenField('module_id', $module->getId()); ?>
 
             <?php foreach ($elements as $element): ?>
                 <div class="row-fluid control-group">
@@ -26,7 +26,7 @@ $this->breadcrumbs = array(
                 </div>
             <?php endforeach;?>
             <br />
-            <?php echo CHtml::submitButton(Yii::t('YupeModule.yupe', 'Сохранить настройки модуля "{{name}}"', array(
+            <?php echo CHtml::submitButton(Yii::t('YupeModule.yupe', 'Save "{{name}}" module settings', array(
                 '{{name}}' => $module->name
             )), array(
                 'class' => 'btn btn-primary',
@@ -36,5 +36,5 @@ $this->breadcrumbs = array(
         </fieldset>
     <?php echo CHtml::endForm(); ?>
 <?php else: ?>
-    <b><?php echo Yii::t('YupeModule.yupe', 'К сожалению для данного модуля нет доступных для редактирования параметров...'); ?></b>
+    <b><?php echo Yii::t('YupeModule.yupe', 'There is no parameters which you cat change for this module...'); ?></b>
 <?php endif; ?>

@@ -1,64 +1,45 @@
 <?php
+/**
+ * Экшн, отвечающий за подтверждение email пользователя
+ *
+ * @category YupeComponents
+ * @package  yupe.modules.user.controllers.account
+ * @author   YupeTeam <team@yupe.ru>
+ * @license  BSD http://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F_BSD
+ * @version  0.5.3
+ * @link     http://yupe.ru
+ *
+ **/
 class EmailConfirmAction extends CAction
 {
-    public function run($key)
+    public function run($token)
     {
-        // пытаемся сделать выборку из таблицы пользователей
-        $user = User::model()->active()->find('activate_key = :activate_key', array(':activate_key' => $key));
+        // пытаемся подтвердить почту
+        if (Yii::app()->userManager->verifyEmail($token)) {
 
-        if (!$user)
-        {
+            Yii::app()->user->setFlash(
+                YFlashMessages::SUCCESS_MESSAGE,
+                Yii::t(
+                    'UserModule.user',
+                    'You confirmed new e-mail successfully!'
+                )
+            );
+
+        }else{
+
             Yii::app()->user->setFlash(
                 YFlashMessages::ERROR_MESSAGE,
-                Yii::t('UserModule.user', 'Ошибка активации! Возможно данный e-mail уже проверен или указан неверный ключ активации! Попробуйте другой e-mail.')
+                Yii::t(
+                    'UserModule.user',
+                    'Activation error! Maybe e-mail already confirmed or incorrect activation code was used. Try to use another e-mail'
+                )
             );
-            $this->controller->redirect(array('/user/account/login'));
         }
 
-        // процедура активации
-
-        // проверить параметры пользователя по "черным спискам"
-        if (!Yii::app()->getModule('user')->isAllowedIp(Yii::app()->request->userHostAddress))
-            // перенаправить на экшн для фиксации невалидных ip адресов
-            $this->controller->redirect(array(Yii::app()->getModule('user')->invalidIpAction));
-        // проверить на email
-        if (!Yii::app()->getModule('user')->isAllowedEmail($user->email))
-            // перенаправить на экшн для фиксации невалидных ip адресов
-            $this->controller->redirect(array(Yii::app()->getModule('user')->invalidEmailAction));
-
-        if ($user->confirmEmail())
-        {
-            Yii::log(
-                Yii::t('UserModule.user', "Активирован e-mail с activate_key = {activate_key}, id = {id}!", array(
-                    '{activate_key}' => $key,
-                    '{id}'           => $user->id,
-                )),
-                CLogger::LEVEL_INFO, UserModule::$logCategory
-            );
-
-            Yii::app()->user->setFlash(
-                YFlashMessages::NOTICE_MESSAGE,
-                Yii::t('UserModule.user', 'Вы успешно подтвердили новый e-mail!')
-            );
-
-            $this->controller->redirect(array('/user/account/profile'));
-        }
-        else
-        {
-            Yii::app()->user->setFlash(
-                YFlashMessages::ERROR_MESSAGE,
-                Yii::t('UserModule.user', 'При подтверждении e-mail произошла ошибка! Попробуйте позже!')
-            );
-
-            Yii::log(
-                Yii::t('UserModule.user', "При подтверждении e-mail c activate_key => {activate_key} произошла ошибка {error}!", array(
-                    '{activate_key}' => $key,
-                    '{error}'        => $e->getMessage(),
-                )),
-                CLogger::LEVEL_ERROR, UserModule::$logCategory
-            );
-
-            $this->controller->redirect(array('/user/account/profile'));
-        }
+        $this->controller->redirect(
+                Yii::app()->user->isGuest
+                ? array('/user/account/login')
+                : array('/user/account/profile')
+        );
     }
 }

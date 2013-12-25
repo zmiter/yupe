@@ -1,6 +1,17 @@
 <?php
 
 /**
+ * Модель Catalog
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.catalog.models
+ * @since 0.1
+ *
+ */
+
+/**
  * This is the model class for table "good".
  *
  * The followings are the available columns in table 'good':
@@ -49,7 +60,7 @@ class Good extends YModel
      */
     public function tableName()
     {
-        return '{{good}}';
+        return '{{catalog_good}}';
     }
 
     /**
@@ -61,17 +72,16 @@ class Good extends YModel
             array('category_id, name, description, alias', 'required', 'except' => 'search'),
             array('name, description, short_description, image, alias, price, article, data, status, is_special', 'filter', 'filter' => 'trim'),
             array('name, alias, price, article, data, status, is_special', 'filter', 'filter' => array($obj = new CHtmlPurifier(), 'purify')),
-            array('status, category_id, is_special', 'numerical', 'integerOnly' => true),
+            array('status, category_id, is_special, user_id', 'numerical', 'integerOnly' => true),
+            array('status, category_id, is_special, user_id', 'length', 'max' => 11),
             array('price', 'numerical'),
-            array('alias', 'YSLugValidator', 'message' => Yii::t('CatalogModule.catalog', 'Запрещенные символы в поле {attribute}')),
-            array('alias', 'unique'),
-            array('name', 'length', 'max' => 150),
-            array('article, alias', 'length', 'max' => 100),
+            array('name, image', 'length', 'max' => 250),
+            array('article', 'length', 'max' => 100),
+            array('alias', 'length', 'max' => 150),
             array('status','in','range' => array_keys($this->statusList)),
             array('is_special','in','range' => array(0, 1)),
-            array('short_description, data', 'safe'),
-            // The following rule is used by search().
-            // Please remove those attributes that should not be searched.
+            array('alias', 'YSLugValidator', 'message' => Yii::t('CatalogModule.catalog', 'Illegal characters in {attribute}')),
+            array('alias', 'unique'),
             array('id, category_id, name, price, article, short_description, description, alias, data, status, create_time, update_time, user_id, change_user_id, is_special', 'safe', 'on' => 'search'),
         );
     }
@@ -107,21 +117,21 @@ class Good extends YModel
     {
         return array(
             'id'                => Yii::t('CatalogModule.catalog', 'ID'),
-            'category_id'       => Yii::t('CatalogModule.catalog', 'Категория'),
-            'name'              => Yii::t('CatalogModule.catalog', 'Название'),
-            'price'             => Yii::t('CatalogModule.catalog', 'Цена'),
-            'article'           => Yii::t('CatalogModule.catalog', 'Артикул'),
-            'image'             => Yii::t('CatalogModule.catalog', 'Изображение'),
-            'short_description' => Yii::t('CatalogModule.catalog', 'Короткое описание'),
-            'description'       => Yii::t('CatalogModule.catalog', 'Описание'),
-            'alias'             => Yii::t('CatalogModule.catalog', 'Алиас'),
-            'data'              => Yii::t('CatalogModule.catalog', 'Данные'),
-            'status'            => Yii::t('CatalogModule.catalog', 'Статус'),
-            'create_time'       => Yii::t('CatalogModule.catalog', 'Добавлено'),
-            'update_time'       => Yii::t('CatalogModule.catalog', 'Изменено'),
-            'user_id'           => Yii::t('CatalogModule.catalog', 'Добавил'),
-            'change_user_id'    => Yii::t('CatalogModule.catalog', 'Изменил'),
-            'is_special'        => Yii::t('CatalogModule.catalog', 'Спецпредложение'),
+            'category_id'       => Yii::t('CatalogModule.catalog', 'Category'),
+            'name'              => Yii::t('CatalogModule.catalog', 'Title'),
+            'price'             => Yii::t('CatalogModule.catalog', 'Price'),
+            'article'           => Yii::t('CatalogModule.catalog', 'Article'),
+            'image'             => Yii::t('CatalogModule.catalog', 'Image'),
+            'short_description' => Yii::t('CatalogModule.catalog', 'Short description'),
+            'description'       => Yii::t('CatalogModule.catalog', 'Description'),
+            'alias'             => Yii::t('CatalogModule.catalog', 'Alias'),
+            'data'              => Yii::t('CatalogModule.catalog', 'Data'),
+            'status'            => Yii::t('CatalogModule.catalog', 'Status'),
+            'create_time'       => Yii::t('CatalogModule.catalog', 'Added'),
+            'update_time'       => Yii::t('CatalogModule.catalog', 'Updated'),
+            'user_id'           => Yii::t('CatalogModule.catalog', 'User'),
+            'change_user_id'    => Yii::t('CatalogModule.catalog', 'Editor'),
+            'is_special'        => Yii::t('CatalogModule.catalog', 'Special'),
         );
     }
 
@@ -132,21 +142,21 @@ class Good extends YModel
     {
         return array(
             'id'                => Yii::t('CatalogModule.catalog', 'ID'),
-            'category_id'       => Yii::t('CatalogModule.catalog', 'Категория'),
-            'name'              => Yii::t('CatalogModule.catalog', 'Название'),
-            'price'             => Yii::t('CatalogModule.catalog', 'Цена'),
-            'article'           => Yii::t('CatalogModule.catalog', 'Артикул'),
-            'image'             => Yii::t('CatalogModule.catalog', 'Изображение'),
-            'short_description' => Yii::t('CatalogModule.catalog', 'Короткое описание'),
-            'description'       => Yii::t('CatalogModule.catalog', 'Описание'),
-            'alias'             => Yii::t('CatalogModule.catalog', 'Алиас'),
-            'data'              => Yii::t('CatalogModule.catalog', 'Данные'),
-            'status'            => Yii::t('CatalogModule.catalog', 'Статус'),
-            'create_time'       => Yii::t('CatalogModule.catalog', 'Добавлено'),
-            'update_time'       => Yii::t('CatalogModule.catalog', 'Изменено'),
-            'user_id'           => Yii::t('CatalogModule.catalog', 'Добавил'),
-            'change_user_id'    => Yii::t('CatalogModule.catalog', 'Изменил'),
-            'is_special'        => Yii::t('CatalogModule.catalog', 'Спецпредложение'),
+            'category_id'       => Yii::t('CatalogModule.catalog', 'Category'),
+            'name'              => Yii::t('CatalogModule.catalog', 'Title'),
+            'price'             => Yii::t('CatalogModule.catalog', 'Price'),
+            'article'           => Yii::t('CatalogModule.catalog', 'Article'),
+            'image'             => Yii::t('CatalogModule.catalog', 'Image'),
+            'short_description' => Yii::t('CatalogModule.catalog', 'Short description'),
+            'description'       => Yii::t('CatalogModule.catalog', 'Description'),
+            'alias'             => Yii::t('CatalogModule.catalog', 'Alias'),
+            'data'              => Yii::t('CatalogModule.catalog', 'Data'),
+            'status'            => Yii::t('CatalogModule.catalog', 'Status'),
+            'create_time'       => Yii::t('CatalogModule.catalog', 'Added'),
+            'update_time'       => Yii::t('CatalogModule.catalog', 'Edited'),
+            'user_id'           => Yii::t('CatalogModule.catalog', 'User'),
+            'change_user_id'    => Yii::t('CatalogModule.catalog', 'Editor'),
+            'is_special'        => Yii::t('CatalogModule.catalog', 'Special'),
         );
     }
 
@@ -193,7 +203,7 @@ class Good extends YModel
                 'updateAttribute'   => 'update_time',
             ),
             'imageUpload' => array(
-                'class'         =>'application.modules.yupe.models.ImageUploadBehavior',
+                'class'         =>'application.modules.yupe.components.behaviors.ImageUploadBehavior',
                 'scenarios'     => array('insert','update'),
                 'attributeName' => 'image',
                 'minSize'       => $module->minSize,
@@ -229,30 +239,30 @@ class Good extends YModel
     public function getStatusList()
     {
         return array(
-            self::STATUS_ZERO       => Yii::t('CatalogModule.catalog', 'Нет в наличии'),
-            self::STATUS_ACTIVE     => Yii::t('CatalogModule.catalog', 'Доступен'),
-            self::STATUS_NOT_ACTIVE => Yii::t('CatalogModule.catalog', 'Не доступен'),
+            self::STATUS_ZERO       => Yii::t('CatalogModule.catalog', 'Not available'),
+            self::STATUS_ACTIVE     => Yii::t('CatalogModule.catalog', 'Active'),
+            self::STATUS_NOT_ACTIVE => Yii::t('CatalogModule.catalog', 'Not active'),
         );
     }
 
     public function getStatus()
     {
         $data = $this->statusList;
-        return isset($data[$this->status]) ? $data[$this->status] : Yii::t('CatalogModule.catalog', '*неизвестно*');
+        return isset($data[$this->status]) ? $data[$this->status] : Yii::t('CatalogModule.catalog', '*unknown*');
     }
 
     public function getSpecialList()
     {
         return array(
-            self::SPECIAL_NOT_ACTIVE => Yii::t('CatalogModule.catalog', 'Нет'),
-            self::STATUS_ACTIVE      => Yii::t('CatalogModule.catalog', 'Да'),
+            self::SPECIAL_NOT_ACTIVE => Yii::t('CatalogModule.catalog', 'No'),
+            self::STATUS_ACTIVE      => Yii::t('CatalogModule.catalog', 'Yes'),
         );
     }
 
     public function getSpecial()
     {
         $data = $this->specialList;
-        return isset($data[$this->is_special]) ? $data[$this->is_special] : Yii::t('CatalogModule.catalog', '*неизвестно*');
+        return isset($data[$this->is_special]) ? $data[$this->is_special] : Yii::t('CatalogModule.catalog', '*unknown*');
     }
 
     public function getImageUrl()
@@ -263,5 +273,17 @@ class Good extends YModel
               Yii::app()->getModule('catalog')->uploadPath . '/' .
               $this->image
             : false;
+    }
+
+    /**
+     * category link
+     *
+     * @return string html caregory link
+     **/
+    public function getCategoryLink()
+    {
+        return $this->category instanceof Category
+            ? CHtml::link($this->category->name, array("/category/default/view", "id" => $this->id))
+            : '---';
     }
 }

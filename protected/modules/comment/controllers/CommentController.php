@@ -1,29 +1,44 @@
 <?php
+
 /**
- * File Doc comment
- * Comment controller class:
+ * Comment controller class
+ * Класс для обработки комментариев на фронт-части.
+ *
+ * @tutorial для ajax-варианта добавления комментария:
+ *            $.ajax({
+ *                type: 'post',
+ *                url: $(<comment_form>).attr('action'),
+ *                data: $(<comment_form>).serialize(),
+ *                success: function(data) {
+ *                    // Обработка нормального состояния
+ *                },
+ *                error: function(data) {
+ *                    // Обработка ошибки
+ *                },
+ *                dataType: 'json'
+ *            });
+ * @return   для ajax-варианта добавления комментария:
+ *              {
+ *                  "result": <result>,                                 // boolean
+ *                  "data": {
+ *                      "message": "<сообщение>",                       // string
+ *                      "comment": {
+ *                          "parent_id": <parent_id>                    // int
+ *                      },
+ *                      "commentContent": "<отрисованный комментарий>"  // string
+ *                  }
+ *              }
  *
  * @category YupeControllers
- * @package  YupeCMS
- * @author   AKulikov <tuxuls@gmail.com>
+ * @package  yupe.modules.comment.controllers
+ * @author   Yupe Team <team@yupe.ru>
  * @license  BSD http://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F_BSD
- * @version  0.1 (dev)
+ * @version  0.5.3
  * @link     http://yupe.ru
  *
  **/
 
-/**
- * Comment controller class:
- *
- * @category YupeControllers
- * @package  YupeCMS
- * @author   AKulikov <tuxuls@gmail.com>
- * @license  BSD http://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F_BSD
- * @version  0.1 (dev)
- * @link     http://yupe.ru
- *
- **/
-class CommentController extends YFrontController
+class CommentController extends yupe\components\controllers\FrontController
 {
     /**
      * Объявляем действия:
@@ -34,76 +49,160 @@ class CommentController extends YFrontController
     {
         return array(
             'captcha' => array(
-                'class'     => 'CCaptchaAction',
+                'class'     => 'application.modules.yupe.components.actions.YCaptchaAction',
                 'backColor' => 0xFFFFFF,
+                'testLimit' => 1
             ),
         );
     }
 
     /**
-     * Action добавления комментария:
+     * Action добавления комментария
      *
-     * @return nothing
+     *
      **/
     public function actionAdd()
     {
-        if (Yii::app()->request->isPostRequest && Yii::app()->request->getPost('Comment')!== null) {
-            $redirect = Yii::app()->request->getPost('redirectTo', Yii::app()->user->returnUrl);
+        if(!Yii::app()->getRequest()->getIsPostRequest() || !Yii::app()->getRequest()->getPost('Comment')){
+            throw new CHttpException(404);
+        }
 
-            $comment = new Comment;
+        $redirect = Yii::app()->getRequest()->getPost('redirectTo', Yii::app()->user->returnUrl);
+
+        $comment = new Comment;
+
+        $comment->setAttributes(
+            Yii::app()->getRequest()->getPost('Comment')
+        );
+
+        $module = Yii::app()->getModule('comment');
+        $comment->status = (int)$module->defaultCommentStatus;
+
+        if (Yii::app()->user->isAuthenticated()) {
             $comment->setAttributes(
-                Yii::app()->request->getPost('Comment')
+                array(
+                    'user_id' => Yii::app()->user->getId(),
+                    'name'    => Yii::app()->user->getState('nick_name'),
+                    'email'   => Yii::app()->user->getState('email'),
+                )
             );
 
-            $module = Yii::app()->getModule('comment');
-            $comment->status = $module->defaultCommentStatus;
-
-            if (Yii::app()->user->isAuthenticated()) {
-                $comment->setAttributes(
-                    array(
-                        'user_id' => Yii::app()->user->id,
-                        'name'    => Yii::app()->user->getState('nick_name'),
-                        'email'   => Yii::app()->user->getState('email'),
-                    )
-                );
-
-                if ($module->autoApprove)
-                    $comment->status = Comment::STATUS_APPROVED;
-            }
-
-            if ($comment->save()) {
-                // сбросить кэш
-                Yii::app()->cache->delete("Comment{$comment->model}{$comment->model_id}");
-
-                // если нужно уведомить администратора - уведомляем =)
-                if ($module->notify && ($notifier = new Notifier()) !== false) {
-                    $comment->onNewComment = array($notifier, 'newComment');
-                    $comment->newComment($comment);
-                }
-
-                if (Yii::app()->request->isAjaxRequest)
-                    Yii::app()->ajax->success(Yii::t('CommentModule.comment', 'Комментарий добавлен!'));
-
-                $message = $comment->status !== Comment::STATUS_APPROVED
-                    ? Yii::t('CommentModule.comment', 'Спасибо, Ваша запись добавлена и ожидает проверки!')
-                    : Yii::t('CommentModule.comment', 'Спасибо, Ваша запись добавлена!');
-
-                Yii::app()->user->setFlash(
-                    YFlashMessages::NOTICE_MESSAGE,
-                    $message
-                );
-                $this->redirect($redirect);
-            } else {
-                if (Yii::app()->request->isAjaxRequest)
-                    Yii::app()->ajax->failure(Yii::t('CommentModule.comment', 'Запись не добавлена!'));
-
-                Yii::app()->user->setFlash(
-                    YFlashMessages::ERROR_MESSAGE,
-                    Yii::t('CommentModule.comment', 'Запись не добавлена! Заполните форму корректно!')
-                );
-                $this->redirect($redirect);
+            if ($module->autoApprove) {
+                $comment->status = Comment::STATUS_APPROVED;
             }
         }
-        throw new CHttpException(404, Yii::t('CommentModule.comment', 'Страница не найдена!'));
+
+        $saveStatus = false;
+        $parentId = $comment->getAttribute('parent_id');
+        $message = Yii::t('CommentModule.comment', 'Record was not added! Fill form correct!');
+        $antiSpamTime  = $this->module->antispamInterval;
+
+        $itIsSpamMessage = Comment::isItSpam(
+            $comment,
+            Yii::app()->user->getId(),
+            $antiSpamTime
+        );
+
+        if($itIsSpamMessage) {
+            $message = Yii::t(
+                'CommentModule.comment',
+                'Spam protection, try to create comment after {few} minutes!',
+                array('{few}' => round($antiSpamTime / 60, 1))
+            );
+        }else{
+
+            // Если указан parent_id просто добавляем новый комментарий.
+            if($parentId > 0)
+            {
+                $rootForComment = Comment::model()->findByPk($parentId);
+                $saveStatus = $comment->appendTo($rootForComment);
+            }
+            else
+            { // Иначе если parent_id не указан...
+
+                $rootNode = Comment::createRootOfCommentsIfNotExists($comment->getAttribute("model"),
+                    $comment->getAttribute("model_id"));
+
+                // Добавляем комментарий к корню.
+                if ($rootNode!==false && $rootNode->id > 0)
+                {
+                    $saveStatus = $comment->appendTo($rootNode);
+                }
+            }
+        }
+
+        if ($saveStatus) {
+
+            // сбросить кэш
+            Yii::app()->cache->delete("Comment{$comment->model}{$comment->model_id}");
+
+            $message = $comment->status !== Comment::STATUS_APPROVED
+                ? Yii::t('CommentModule.comment', 'You comments is in validation. Thanks.')
+                : Yii::t('CommentModule.comment', 'You record was created. Thanks.');
+
+            $commentContent = $comment->status !== Comment::STATUS_APPROVED
+                ? ''
+                : $this->_renderComment($comment);
+
+            if (Yii::app()->getRequest()->getIsAjaxRequest()) {
+                Yii::app()->ajax->success(
+                    array(
+                        'message'        => $message,
+                        'comment'        => array(
+                            'parent_id'  => $comment->parent_id
+                        ),
+                        'commentContent' => $commentContent
+                    )
+                );
+            }
+
+            Yii::app()->user->setFlash(
+                YFlashMessages::SUCCESS_MESSAGE,
+                $message
+            );
+
+            $this->redirect($redirect);
+
+        } else {
+
+            if (Yii::app()->getRequest()->getIsAjaxRequest()) {
+                Yii::app()->ajax->failure(
+                    array(
+                        'message' => $message
+                    )
+                );
+            }
+
+            Yii::app()->user->setFlash(
+                YFlashMessages::ERROR_MESSAGE, $message
+            );
+            $this->redirect($redirect);
+        }
+    }
+
+    /**
+     * Отрисовка комментария:
+     *
+     * @param Comment $comment - комментарий
+     *
+     * @return string html отрисованного комментария
+     **/
+    private function _renderComment(Comment $comment = null)
+    {
+        if ($comment === null) {
+            return null;
+        }
+
+        ob_start();
+
+        $comment->refresh();
+
+        $this->widget(
+            'application.modules.comment.widgets.CommentsListWidget', array(
+                'comment' => $comment
+            )
+        );
+
+        return ob_get_clean();
     }
 }

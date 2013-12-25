@@ -1,3 +1,5 @@
+<?php $this->breadcrumbs = array(Yii::t('WikiModule.wiki', 'Wiki'));?>
+
 <?php /** @var $pages WikiPage[] */?>
 <?php $namespace=null?>
 <ol>

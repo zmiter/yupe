@@ -1,4 +1,15 @@
 <?php
+/**
+ * DictionaryData модель "данные справочника"
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.dictionary.models
+ * @since 0.1
+ *
+ */
+
 
 /**
  * This is the model class for table "dictionary_data".
@@ -40,7 +51,7 @@ class DictionaryData extends YModel
      */
     public function tableName()
     {
-        return '{{dictionary_data}}';
+        return '{{dictionary_dictionary_data}}';
     }
 
     /**
@@ -54,9 +65,8 @@ class DictionaryData extends YModel
             array('group_id, code, name, value', 'required'),
             array('status', 'numerical', 'integerOnly' => true),
             array('group_id, create_user_id, update_user_id', 'length', 'max' => 10),
-            array('code', 'length', 'max' => 50),
-            array('name', 'length', 'max' => 150),
-            array('description', 'length', 'max' => 300),
+            array('code', 'length', 'max' => 100),
+            array('name, value, description', 'length', 'max' => 250),
             array('code', 'YSLugValidator'),
             array('code', 'unique'),
             // The following rule is used by search().
@@ -86,16 +96,16 @@ class DictionaryData extends YModel
     {
         return array(
             'id'             => Yii::t('DictionaryModule.dictionary', 'id'),
-            'group_id'       => Yii::t('DictionaryModule.dictionary', 'Справочник'),
-            'code'           => Yii::t('DictionaryModule.dictionary', 'Код'),
-            'name'           => Yii::t('DictionaryModule.dictionary', 'Название'),
-            'value'          => Yii::t('DictionaryModule.dictionary', 'Значение'),
-            'description'    => Yii::t('DictionaryModule.dictionary', 'Описание'),
-            'creation_date'  => Yii::t('DictionaryModule.dictionary', 'Дата создания'),
-            'update_date'    => Yii::t('DictionaryModule.dictionary', 'Дата обновления'),
-            'create_user_id' => Yii::t('DictionaryModule.dictionary', 'Создал'),
-            'update_user_id' => Yii::t('DictionaryModule.dictionary', 'Обновил'),
-            'status'         => Yii::t('DictionaryModule.dictionary', 'Активно'),
+            'group_id'       => Yii::t('DictionaryModule.dictionary', 'Dictionary'),
+            'code'           => Yii::t('DictionaryModule.dictionary', 'Code'),
+            'name'           => Yii::t('DictionaryModule.dictionary', 'Title'),
+            'value'          => Yii::t('DictionaryModule.dictionary', 'Item'),
+            'description'    => Yii::t('DictionaryModule.dictionary', 'Description'),
+            'creation_date'  => Yii::t('DictionaryModule.dictionary', 'Created at'),
+            'update_date'    => Yii::t('DictionaryModule.dictionary', 'Updated at.'),
+            'create_user_id' => Yii::t('DictionaryModule.dictionary', 'Created by.'),
+            'update_user_id' => Yii::t('DictionaryModule.dictionary', 'Updated by.'),
+            'status'         => Yii::t('DictionaryModule.dictionary', 'Active'),
         );
     }
 
@@ -141,8 +151,8 @@ class DictionaryData extends YModel
     public function getStatusList()
     {
         return array(
-            self::STATUS_ACTIVE  => Yii::t('DictionaryModule.dictionary', 'Да'),
-            self::STATUS_DELETED => Yii::t('DictionaryModule.dictionary', 'Нет'),
+            self::STATUS_ACTIVE  => Yii::t('DictionaryModule.dictionary', 'Yes'),
+            self::STATUS_DELETED => Yii::t('DictionaryModule.dictionary', 'No'),
         );
     }
 
@@ -150,7 +160,7 @@ class DictionaryData extends YModel
     {
         $data = $this->getStatusList();
 
-        return isset($data[$this->status]) ? $data[$this->status] : Yii::t('DictionaryModule.dictionary', '*неизвестно*');
+        return isset($data[$this->status]) ? $data[$this->status] : Yii::t('DictionaryModule.dictionary', '*unknown*');
     }
 
     public function getByCode($code)

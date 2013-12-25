@@ -1,4 +1,14 @@
 <?php
+/**
+ * News основная моделька для новостей
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.news.models
+ * @since 0.1
+ *
+ */
 
 /**
  * This is the model class for table "News".
@@ -33,7 +43,7 @@ class News extends YModel
      */
     public function tableName()
     {
-        return '{{news}}';
+        return '{{news_news}}';
     }
 
     /**
@@ -59,14 +69,15 @@ class News extends YModel
             array('title, alias, keywords', 'length', 'max' => 150),
             array('lang', 'length', 'max' => 2),
             array('lang', 'default', 'value' => Yii::app()->sourceLanguage),
+            array('lang', 'in', 'range' => array_keys(Yii::app()->getModule('yupe')->getLanguagesList())),
             array('status', 'in', 'range' => array_keys($this->statusList)),
-            array('alias', 'unique', 'criteria' => array('condition' => 'lang = :lang', 'params' => array(':lang' => $this->lang)), 'on' => 'insert'),
+            array('alias', 'YUniqueSlugValidator'),
             array('description', 'length', 'max' => 250),
-            array('link', 'length', 'max' => 300),
-            array('link', 'url'),
-            array('alias', 'YSLugValidator', 'message' => Yii::t('NewsModule.news', 'Запрещенные символы в поле {attribute}')),
+            array('link', 'length', 'max' => 250),
+            array('link', 'YUrlValidator'),
+            array('alias', 'YSLugValidator', 'message' => Yii::t('NewsModule.news', 'Bad characters in {attribute} field')),
             array('category_id', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, keywords, description, creation_date, change_date, date, title, alias, short_text, full_text, user_id, status, is_protected', 'safe', 'on' => 'search'),
+            array('id, keywords, description, creation_date, change_date, date, title, alias, short_text, full_text, user_id, status, is_protected, lang', 'safe', 'on' => 'search'),
         );
     }
 
@@ -75,13 +86,12 @@ class News extends YModel
         $module = Yii::app()->getModule('news');
         return array(
             'imageUpload' => array(
-                'class'         =>'application.modules.yupe.models.ImageUploadBehavior',
+                'class'         =>'application.modules.yupe.components.behaviors.ImageUploadBehavior',
                 'scenarios'     => array('insert','update'),
                 'attributeName' => 'image',
                 'minSize'       => $module->minSize,
                 'maxSize'       => $module->maxSize,
-                'types'         => $module->allowedExtensions,
-                'requiredOn'    => 'insert',
+                'types'         => $module->allowedExtensions,              
                 'uploadPath'    => $module->getUploadPath(),
                 'imageNameCallback' => array($this, 'generateFileName'),
                 'resize' => array(
@@ -94,7 +104,7 @@ class News extends YModel
 
     public function generateFileName()
     {
-        return md5($this->title . time());
+        return md5($this->title . microtime(true));
     }
     /**
      * @return array relational rules.
@@ -111,15 +121,15 @@ class News extends YModel
     {
         return array(
             'published' => array(
-                'condition' => 'status = :status',
+                'condition' => 't.status = :status',
                 'params'    => array(':status'   => self::STATUS_PUBLISHED),
             ),
             'protected' => array(
-                'condition' => 'is_protected = :is_protected',
+                'condition' => 't.is_protected = :is_protected',
                 'params'    => array(':is_prtected' => self::PROTECTED_YES),
             ),
             'public'    => array(
-                'condition' => 'is_protected = :is_protected',
+                'condition' => 't.is_protected = :is_protected',
                 'params'    => array(':is_protected' => self::PROTECTED_NO),
             ),
             'recent'    => array(
@@ -163,22 +173,22 @@ class News extends YModel
     {
         return array(
             'id'            => Yii::t('NewsModule.news', 'Id'),
-            'category_id'   => Yii::t('NewsModule.news', 'Категория'),
-            'creation_date' => Yii::t('NewsModule.news', 'Дата создания'),
-            'change_date'   => Yii::t('NewsModule.news', 'Дата изменения'),
-            'date'          => Yii::t('NewsModule.news', 'Дата'),
-            'title'         => Yii::t('NewsModule.news', 'Заголовок'),
-            'alias'         => Yii::t('NewsModule.news', 'Алиас'),
-            'image'         => Yii::t('NewsModule.news', 'Изображение'),
-            'link'          => Yii::t('NewsModule.news', 'Ссылка'),
-            'lang'          => Yii::t('NewsModule.news', 'Язык'),
-            'short_text'    => Yii::t('NewsModule.news', 'Короткий текст'),
-            'full_text'     => Yii::t('NewsModule.news', 'Полный текст'),
-            'user_id'       => Yii::t('NewsModule.news', 'Автор'),
-            'status'        => Yii::t('NewsModule.news', 'Статус'),
-            'is_protected'  => Yii::t('NewsModule.news', 'Доступ: * только для авторизованных пользователей'),
-            'keywords'      => Yii::t('NewsModule.news', 'Ключевые слова (SEO)'),
-            'description'   => Yii::t('NewsModule.news', 'Описание (SEO)'),
+            'category_id'   => Yii::t('NewsModule.news', 'Category'),
+            'creation_date' => Yii::t('NewsModule.news', 'Created at'),
+            'change_date'   => Yii::t('NewsModule.news', 'Updated at'),
+            'date'          => Yii::t('NewsModule.news', 'Date'),
+            'title'         => Yii::t('NewsModule.news', 'Title'),
+            'alias'         => Yii::t('NewsModule.news', 'Alias'),
+            'image'         => Yii::t('NewsModule.news', 'Image'),
+            'link'          => Yii::t('NewsModule.news', 'Link'),
+            'lang'          => Yii::t('NewsModule.news', 'Language'),
+            'short_text'    => Yii::t('NewsModule.news', 'Short text'),
+            'full_text'     => Yii::t('NewsModule.news', 'Full text'),
+            'user_id'       => Yii::t('NewsModule.news', 'Author'),
+            'status'        => Yii::t('NewsModule.news', 'Status'),
+            'is_protected'  => Yii::t('NewsModule.news', 'Access: * Only for authorized users'),
+            'keywords'      => Yii::t('NewsModule.news', 'Keywords (SEO)'),
+            'description'   => Yii::t('NewsModule.news', 'Description (SEO)'),
         );
     }
 
@@ -186,6 +196,9 @@ class News extends YModel
     {
         if (!$this->alias)
             $this->alias = YText::translit($this->title);
+
+        if(!$this->lang)
+            $this->lang = Yii::app()->language;
 
         return parent::beforeValidate();
     }
@@ -222,23 +235,22 @@ class News extends YModel
 
         $criteria = new CDbCriteria;
 
-        $criteria->compare('id', $this->id);
+        $criteria->compare('t.id', $this->id);
         $criteria->compare('creation_date', $this->creation_date, true);
         $criteria->compare('change_date', $this->change_date, true);
-        $criteria->compare('date', $this->date, true);
+        $criteria->compare('date', $this->date);
         $criteria->compare('title', $this->title, true);
-        $criteria->compare('alias', $this->alias, true);
+        $criteria->compare('t.alias', $this->alias, true);
         $criteria->compare('short_text', $this->short_text, true);
         $criteria->compare('full_text', $this->full_text, true);
         $criteria->compare('user_id', $this->user_id);
         if ($this->status != '')
-            $criteria->compare('status', $this->status);
+            $criteria->compare('t.status', $this->status);
         if ($this->category_id != '')
             $criteria->compare('category_id', $this->category_id);
         $criteria->compare('is_protected', $this->is_protected);
-
-        $criteria->with = array("category");
-
+        $criteria->compare('t.lang', $this->lang);
+        $criteria->with = array('category');
         return new CActiveDataProvider(get_class($this), array(
             'criteria' => $criteria,
             'sort'     => array('defaultOrder' => 'date DESC'),
@@ -253,35 +265,35 @@ class News extends YModel
     public function getStatusList()
     {
         return array(
-            self::STATUS_DRAFT      => Yii::t('NewsModule.news', 'Черновик'),
-            self::STATUS_PUBLISHED  => Yii::t('NewsModule.news', 'Опубликовано'),
-            self::STATUS_MODERATION => Yii::t('NewsModule.news', 'На модерации'),
+            self::STATUS_DRAFT      => Yii::t('NewsModule.news', 'Draft'),
+            self::STATUS_PUBLISHED  => Yii::t('NewsModule.news', 'Published'),
+            self::STATUS_MODERATION => Yii::t('NewsModule.news', 'On moderation'),
         );
     }
 
     public function getStatus()
     {
-        $data = $this->statusList;
-        return isset($data[$this->status]) ? $data[$this->status] : Yii::t('NewsModule.news', '*неизвестно*');
+        $data = $this->getStatusList();
+        return isset($data[$this->status]) ? $data[$this->status] : Yii::t('NewsModule.news', '*unknown*');
     }
 
     public function getProtectedStatusList()
     {
         return array(
-            self::PROTECTED_NO  => Yii::t('NewsModule.news', 'нет'),
-            self::PROTECTED_YES => Yii::t('NewsModule.news', 'да'),
+            self::PROTECTED_NO  => Yii::t('NewsModule.news', 'no'),
+            self::PROTECTED_YES => Yii::t('NewsModule.news', 'yes'),
         );
     }
 
     public function getProtectedStatus()
     {
-        $data = $this->protectedStatusList;
-        return isset($data[$this->is_protected]) ? $data[$this->is_protected] : Yii::t('NewsModule.news', '*неизвестно*');
+        $data = $this->getProtectedStatusList();
+        return isset($data[$this->is_protected]) ? $data[$this->is_protected] : Yii::t('NewsModule.news', '*unknown*');
     }
 
     public function getCategoryName()
     {
-        return ($this->category === null) ? '&mdash;' : $this->category->name;
+        return ($this->category === null) ? '---' : $this->category->name;
     }
 
     public function getImageUrl()

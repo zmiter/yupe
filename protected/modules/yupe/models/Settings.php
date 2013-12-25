@@ -1,6 +1,12 @@
 <?php
 
 /**
+ *
+ * @package  yupe.modules.yupe.models
+ *
+*/
+
+/**
  * This is the model class for table "Settings".
  *
  * The followings are the available columns in table 'Settings':
@@ -23,6 +29,12 @@ class Settings extends YModel
     */
     const TYPE_CORE = 1;
     const TYPE_USER = 2;
+
+    /**
+     * @var array Массив хранящий список валидаторов для определенного параметра модуля
+     */
+    public $rulesFromModule = array();
+
     /**
      * Returns the static model of the specified AR class.
      * @return Settings the static model class
@@ -37,7 +49,7 @@ class Settings extends YModel
      */
     public function tableName()
     {
-        return '{{settings}}';
+        return '{{yupe_settings}}';
     }
 
     /**
@@ -45,14 +57,15 @@ class Settings extends YModel
      */
     public function rules()
     {
-        return array(
+        return CMap::mergeArray(array(
             array('module_id, param_name', 'required'),
-            array('module_id, param_name, param_value', 'length', 'max' => 100),
+            array('module_id, param_name', 'length', 'max' => 100),
+            array('param_value', 'length', 'max' => 255),
             array('user_id', 'numerical', 'integerOnly' => true),
             //array('module_id','match','pattern' => '/^[a-zA-Z0-9_\-]+$/'),
             //array('param_name, param_value','match','pattern' => '/^[a-zA-Z0-9_\-]+$/'),
             array('id, module_id, param_name, param_value, creation_date, change_date, user_id', 'safe', 'on' => 'search'),
-        );
+        ),$this->rulesFromModule);
     }
 
     public function beforeSave()
@@ -63,7 +76,10 @@ class Settings extends YModel
             $this->creation_date = $this->change_date;
 
         if (!isset($this->user_id))
-            $this->user_id = Yii::app()->user->id;
+            $this->user_id = Yii::app()->user->getId();
+
+        if ($this->user_id !== Yii::app()->user->getId())
+            $this->user_id = Yii::app()->user->getId();
 
         return parent::beforeSave();
     }
@@ -87,12 +103,12 @@ class Settings extends YModel
     {
         return array(
             'id'            => Yii::t('YupeModule.yupe', 'ID'),
-            'module_id'     => Yii::t('YupeModule.yupe', 'Модуль'),
-            'param_name'    => Yii::t('YupeModule.yupe', 'Имя парамметра'),
-            'param_value'   => Yii::t('YupeModule.yupe', 'Значение парамметра'),
-            'creation_date' => Yii::t('YupeModule.yupe', 'Дата создания'),
-            'change_date'   => Yii::t('YupeModule.yupe', 'Дата изменения'),
-            'user_id'       => Yii::t('YupeModule.yupe', 'Пользователь'),
+            'module_id'     => Yii::t('YupeModule.yupe', 'Module'),
+            'param_name'    => Yii::t('YupeModule.yupe', 'Parameter name'),
+            'param_value'   => Yii::t('YupeModule.yupe', 'Parameter value'),
+            'creation_date' => Yii::t('YupeModule.yupe', 'Creation date'),
+            'change_date'   => Yii::t('YupeModule.yupe', 'Change date'),
+            'user_id'       => Yii::t('YupeModule.yupe', 'User'),
         );
     }
 
@@ -139,7 +155,9 @@ class Settings extends YModel
             if (!empty($params))
                 $criteria->addInCondition("param_name", $params);
 
-            $q = $this->cache(Yii::app()->getModule('yupe')->coreCacheTime)->findAll($criteria);
+            $dependency = new TagsCache($moduleId, 'yupe');
+
+            $q = $this->cache(Yii::app()->getModule('yupe')->coreCacheTime, $dependency)->findAll($criteria);
 
             if(count($q))
             {

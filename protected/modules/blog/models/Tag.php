@@ -1,4 +1,16 @@
 <?php
+/**
+ * Tag
+ *
+ * Модель для работы с тегами
+ *
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.blog.models
+ * @since 0.1
+ *
+ */
 
 /**
  * This is the model class for table "{{tag}}".
@@ -10,7 +22,7 @@
  * The followings are the available model relations:
  * @property Post[] $yupePosts
  */
-class Tag extends CActiveRecord
+class Tag extends YModel
 {
 	/**
 	 * Returns the static model of the specified AR class.
@@ -27,7 +39,7 @@ class Tag extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{tag}}';
+		return '{{blog_tag}}';
 	}
 
 	/**

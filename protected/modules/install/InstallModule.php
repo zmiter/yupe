@@ -1,28 +1,18 @@
 <?php
 /**
- * Install Module Class
- * Класс модуля инсталятора:
+ * InstallModule основной класс модуля install
  *
- * @category YupeModules
- * @package  YupeCMS
- * @author   YupeTeam <team@yupe.ru>
- * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
- * @version  0.0.1
- * @link     http://yupe.ru
- **/
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.install
+ * @since 0.1
+ *
+ */
 
-/**
- * Install Module Class
- * Класс модуля инсталятора:
- *
- * @category YupeModules
- * @package  YupeCMS
- * @author   YupeTeam <team@yupe.ru>
- * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
- * @version  0.0.1
- * @link     http://yupe.ru
- **/
-class InstallModule extends YWebModule
+use yupe\components\WebModule;
+
+class InstallModule extends WebModule
 {
     /**
      * Проверка инсталятора:
@@ -33,13 +23,13 @@ class InstallModule extends YWebModule
     {
         $messages = array();
 
-        if ($this->isActive)
-            $messages[YWebModule::CHECK_ERROR][] = array(
-                'type'    => YWebModule::CHECK_ERROR,
-                'message' => Yii::t('yupe', 'У Вас активирован модуль "Установщик", после установки системы его необходимо отключить!')
+        if ($this->getIsActive())
+            $messages[WebModule::CHECK_ERROR][] = array(
+                'type'    => WebModule::CHECK_ERROR,
+                'message' => Yii::t('InstallModule.install', 'You have "Insatll" module active! After install it need to be disabled!')
             );
 
-        return (isset($messages[YWebModule::CHECK_ERROR])) ? $messages : true;
+        return (isset($messages[WebModule::CHECK_ERROR])) ? $messages : true;
     }
 
     /**
@@ -62,14 +52,14 @@ class InstallModule extends YWebModule
     public function getInstallSteps($stepName = false)
     {
         $installSteps = array(
-            'index'          => Yii::t('InstallModule.install', 'Шаг 1 из 8 : "Приветствие!"'),
-            'environment'    => Yii::t('InstallModule.install', 'Шаг 2 из 8 : "Проверка окружения!"'),
-            'requirements'   => Yii::t('InstallModule.install', 'Шаг 3 из 8 : "Проверка системных требований"'),
-            'dbsettings'     => Yii::t('InstallModule.install', 'Шаг 4 из 8 : "Соединение с базой данных"'),
-            'modulesinstall' => Yii::t('InstallModule.install', 'Шаг 5 из 8 : "Установка модулей"'),
-            'createuser'     => Yii::t('InstallModule.install', 'Шаг 6 из 8 : "Создание учетной записи администратора"'),
-            'sitesettings'   => Yii::t('InstallModule.install', 'Шаг 7 из 8 : "Настройки проекта"'),
-            'finish'         => Yii::t('InstallModule.install', 'Шаг 8 из 8 : "Окончание установки"'),
+            'index'          => Yii::t('InstallModule.install', 'Step 1 of 8: Welcome!'),
+            'environment'    => Yii::t('InstallModule.install', 'Step 2 of 8: Environment check!'),
+            'requirements'   => Yii::t('InstallModule.install', 'Step 3 of 8: System requirements'),
+            'dbsettings'     => Yii::t('InstallModule.install', 'Step 4 of 8: DB settings'),
+            'modulesinstall' => Yii::t('InstallModule.install', 'Step 5 of 8: Installing modules'),
+            'createuser'     => Yii::t('InstallModule.install', 'Step 6 of 8: Creating administrator'),
+            'sitesettings'   => Yii::t('InstallModule.install', 'Step 7 of 8: Project settings'),
+            'finish'         => Yii::t('InstallModule.install', 'Step 8 of 8: Finish'),
         );
         if (isset($installSteps[$stepName]))
             return $installSteps[$stepName];
@@ -180,7 +170,7 @@ class InstallModule extends YWebModule
     {
         $installSteps = $this->getInstallSteps();
         $installMenu = array();
-        $startUrl = '/' . Yii::app()->controller->module->id . '/' . Yii::app()->controller->id . '/';
+        $startUrl = '/' . Yii::app()->controller->module->getId() . '/' . Yii::app()->controller->id . '/';
         foreach ($installSteps as $key => $value)
             $installMenu[] = array_merge(
                 array(
@@ -235,7 +225,7 @@ class InstallModule extends YWebModule
      **/
     public function getCategory()
     {
-        return Yii::t('InstallModule.install', 'Юпи!');
+        return Yii::t('InstallModule.install', 'Yupe!');
     }
 
     /**
@@ -245,7 +235,7 @@ class InstallModule extends YWebModule
      **/
     public function getName()
     {
-        return Yii::t('InstallModule.install', 'Установщик');
+        return Yii::t('InstallModule.install', 'Installer');
     }
 
     /**
@@ -265,7 +255,7 @@ class InstallModule extends YWebModule
      **/
     public function getDescription()
     {
-        return Yii::t('InstallModule.install', 'Модуль для установки системы');
+        return Yii::t('InstallModule.install', 'Module for system installation');
     }
 
     /**
@@ -332,5 +322,15 @@ class InstallModule extends YWebModule
                 'install.components.*',
             )
         );
+    }
+
+    /**
+     * Можно ли включить модуль:
+     *
+     * @return can activate module
+     **/
+    public function canActivate()
+    {
+        return false;
     }
 }

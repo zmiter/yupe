@@ -1,28 +1,16 @@
 <?php
 /**
- * MailModule
- * Класс модуля Mail:
+ * MailModule основной класс модуля install
  *
- * @category YupeModules
- * @package  YupeCMS
- * @author   YupeTeam <team@yupe.ru>
- * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
- * @version  0.1
- * @link     http://yupe.ru
- **/
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.mail
+ * @since 0.1
+ *
+ */
 
-/**
- * MailModule
- * Класс модуля Mail:
- *
- * @category YupeModules
- * @package  YupeCMS
- * @author   YupeTeam <team@yupe.ru>
- * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
- * @version  0.1
- * @link     http://yupe.ru
- **/
-class MailModule extends YWebModule
+class MailModule extends yupe\components\WebModule
 {
     /**
      * Метод получения версии:
@@ -41,7 +29,7 @@ class MailModule extends YWebModule
      **/
     public function getCategory()
     {
-        return Yii::t('MailModule.mail', 'Сервисы');
+        return Yii::t('MailModule.mail', 'Services');
     }
 
     /**
@@ -51,7 +39,7 @@ class MailModule extends YWebModule
      **/
     public function getName()
     {
-        return Yii::t('MailModule.mail', 'Почтовые сообщения');
+        return Yii::t('MailModule.mail', 'Mail messages');
     }
 
     /**
@@ -61,7 +49,7 @@ class MailModule extends YWebModule
      **/
     public function getDescription()
     {
-        return Yii::t('MailModule.mail', 'Модуль управления почтовыми сообщениями');
+        return Yii::t('MailModule.mail', 'Module for mail message management');
     }
 
     /**
@@ -111,7 +99,7 @@ class MailModule extends YWebModule
      **/
     public function getAdminPageLink()
     {
-        return '/mail/eventAdmin/index';
+        return '/mail/eventBackend/index';
     }
 
     /**
@@ -122,12 +110,12 @@ class MailModule extends YWebModule
     public function getNavigation()
     {
         return array(
-            array('label' => Yii::t('MailModule.mail', 'Почтовые события')),
-            array('icon' => 'list-alt', 'label' => Yii::t('MailModule.mail', 'Список событий'), 'url'=>array('/mail/eventAdmin/index')),
-            array('icon' => 'plus-sign', 'label' => Yii::t('MailModule.mail', 'Добавить событие'), 'url' => array('/mail/eventAdmin/create')),
-            array('label' => Yii::t('MailModule.mail', 'Почтовые шаблоны')),
-            array('icon'=> 'list-alt', 'label' => Yii::t('MailModule.mail', 'Список шаблонов'), 'url'=>array('/mail/templateAdmin/index')),
-            array('icon'=> 'plus-sign', 'label' => Yii::t('MailModule.mail', 'Добавить шаблон'), 'url' => array('/mail/templateAdmin/create')),
+            array('label' => Yii::t('MailModule.mail', 'Mail events')),
+            array('icon' => 'list-alt', 'label' => Yii::t('MailModule.mail', 'Messages list'), 'url'=>array('/mail/eventBackend/index')),
+            array('icon' => 'plus-sign', 'label' => Yii::t('MailModule.mail', 'Create event'), 'url' => array('/mail/eventBackend/create')),
+            array('label' => Yii::t('MailModule.mail', 'Mail templates')),
+            array('icon'=> 'list-alt', 'label' => Yii::t('MailModule.mail', 'Templates list'), 'url'=>array('/mail/templateBackend/index')),
+            array('icon'=> 'plus-sign', 'label' => Yii::t('MailModule.mail', 'Create template'), 'url' => array('/mail/templateBackend/create')),
         );
     }
 
@@ -146,5 +134,17 @@ class MailModule extends YWebModule
         );
 
         parent::init();
+    }
+
+    /**
+     * Получаем массив с именами модулей, от которых зависит работа данного модуля
+     * 
+     * @return array Массив с именами модулей, от которых зависит работа данного модуля
+     * 
+     * @since 0.5
+     */
+    public function getDependencies()
+    {
+        return array('user');
     }
 }

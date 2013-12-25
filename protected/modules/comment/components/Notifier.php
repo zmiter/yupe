@@ -1,29 +1,23 @@
 <?php
 /**
- * File Doc comment
- * Notifier Class:
+ * Notifier Class
  *
  * @category YupeComponents
- * @package  YupeCMS
+ * @package  yupe.modules.comment.components
  * @author   AKulikov <tuxuls@gmail.com>
  * @license  BSD http://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F_BSD
- * @version  0.1 (dev)
+ * @version  0.1
  * @link     http://yupe.ru
  *
  **/
 
-/**
- * Notifier Class:
- *
- * @category YupeComponents
- * @package  YupeCMS
- * @author   AKulikov <tuxuls@gmail.com>
- * @license  BSD http://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F_BSD
- * @version  0.1 (dev)
- * @link     http://yupe.ru
- *
- **/
-class Notifier
+namespace application\modules\comment\components;
+
+use CModelEvent;
+use Yii;
+use CHtmlPurifier;
+
+class Notifier implements INotifier
 {
     /**
      * Comment Notifier Function
@@ -41,7 +35,7 @@ class Notifier
          **/
         Yii::log(
             Yii::t(
-                'CommentModule.comment', "{className}: Отправляем информацию о создании нового комментария на сайте.", array(
+                'CommentModule.comment', '{className}: Sending information about new site comment.', array(
                     '{className}' => get_class($this)
                 )
             )
@@ -58,11 +52,14 @@ class Notifier
             $event->module->email,
             // Тема письма:
             Yii::t(
-                'CommentModule.comment', 'Добавлена новая запись на сайте "{app}"!', array('{app}' => Yii::app()->name)
+                'CommentModule.comment', 'New post was created on site "{app}"!', array('{app}' => Yii::app()->name)
             ),
             // Текст письма (сам комментарий и немного информации):
             Yii::t(
-                'CommentModule.comment', "На вашем сайте добавлен комментарий:\nАвтор: {author}\nМодель/ID: {model}/{model_id}\nТекст комментария: {comment}", array(
+                'CommentModule.comment', 'Comment was created on your site:
+Author: {author}
+Model/ID: {model}/{model_id}
+Comment text:  {comment}', array(
                     '{author}'   => isset($event->comment->author->nick_name) ? $event->comment->author->nick_name : $event->comment->author,
                     '{model}'    => $event->comment->model,
                     '{model_id}' => $event->comment->model_id,

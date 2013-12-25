@@ -1,25 +1,12 @@
 <?php
 /**
- * File Doc Comment:
  * Файл класса YWebUser, который расширяет возможности стандартного CWebUser
  *
  * @category YupeComponents
- * @package  YupeCMS
+ * @package  yupe.modules.user.components
  * @author   YupeTeam <team@yupe.ru>
  * @license  BSD http://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F_BSD
- * @version  0.5 (dev)
- * @link     http://yupe.ru
- *
- **/
-
-/**
- * Файл класса YWebUser, который расширяет возможности стандартного CWebUser
- *
- * @category YupeComponents
- * @package  YupeCMS
- * @author   YupeTeam <team@yupe.ru>
- * @license  BSD http://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F_BSD
- * @version  0.5 (dev)
+ * @version  0.5.3
  * @link     http://yupe.ru
  *
  **/
@@ -50,13 +37,16 @@ class YWebUser extends CWebUser
      **/
     public function isAuthenticated()
     {
-        if (Yii::app()->user->isGuest)
+        if ($this->isGuest) {
             return false;
+        }
 
         $authData = $this->getAuthData();
 
-        if ($authData['nick_name'] && isset($authData['access_level']) && $authData['loginTime'] && $authData['id'])
+        if ($authData['nick_name'] && isset($authData['access_level']) && $authData['loginTime'] && $authData['id']) {
             return true;
+        }
+
         return false;
     }
 
@@ -68,10 +58,10 @@ class YWebUser extends CWebUser
     protected function getAuthData()
     {
         return array(
-            'nick_name'    => Yii::app()->user->getState('nick_name'),
-            'access_level' => (int) Yii::app()->user->getState('access_level'),
-            'loginTime'    => Yii::app()->user->getState('loginTime'),
-            'id'           => (int) Yii::app()->user->getState('id'),
+            'nick_name'    => $this->getState('nick_name'),
+            'access_level' => (int) $this->getState('access_level'),
+            'loginTime'    => $this->getState('loginTime'),
+            'id'           => (int) $this->getState('id'),
         );
     }
 
@@ -85,8 +75,8 @@ class YWebUser extends CWebUser
         if (!$this->isAuthenticated())
             return false;
 
-        $loginAdmTime = Yii::app()->user->getState('loginAdmTime');
-        $isAdmin      = Yii::app()->user->getState('isAdmin');
+        $loginAdmTime = $this->getState('loginAdmTime');
+        $isAdmin      = $this->getState('isAdmin');
 
         if ($isAdmin == User::ACCESS_LEVEL_ADMIN && $loginAdmTime)
             return true;
@@ -96,19 +86,48 @@ class YWebUser extends CWebUser
     /**
      * Метод возвращающий профайл пользователя:
      *
-     * @param string $moduleName - идентификатор модуля
+     * @param string $id  - идентификатор пользователя
+     * @param string $moduleName   - идентификатор модуля
      *
-     * @todo: Реализовать выборку любого профиля
-     *
-     * @return null || user profile
-     **/
-    public function getProfile($moduleName = null)
+     * @return User|null - Модель пользователя в случае успеха, иначе null
+     */
+    public function getProfile($id = null,$moduleName = null)
     {
         if (!$moduleName) {
-            if ($this->_profile === null)
-                $this->_profile = User::model()->findByPk($this->id);
+			if (empty($id)){
+				$id = $this->id;
+            }
+            if ($this->_profile === null) {
+                $this->_profile = User::model()->findByPk($id);
+            }
             return $this->_profile;
         }
         return null;
+    }
+
+    /**
+     * Метод для действий после выхода из системы:
+     *
+     * @return parent::afterLogout()
+     */
+    protected function afterLogout()
+    {
+        Yii::app()->cache->clear('loggedIn' . $this->getId());
+
+        return parent::afterLogout();
+    }
+
+    /**
+     * Метод для действий после входа в систему:
+     *
+     * @param boolean $fromCookie - is authorize from cookie
+     * 
+     * @return parent::afterLogin()
+     */
+    protected function afterLogin($fromCookie)
+    {
+        Yii::app()->cache->clear('loggedIn' . $this->getId());
+
+        return parent::afterLogin($fromCookie);
     }
 }

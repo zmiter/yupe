@@ -13,9 +13,29 @@ body {
 }
 div#page {
     padding-top: 50px;
+    padding-bottom: 50px;
 }
+
+#page [class*='icon-'] {
+    color: #333;
+}
+
+#page [class*='icon-'].icon-white {
+    color: #fff;
+}
+
+#page a:hover [class*='icon-'] {
+    color: inherit;
+}
+
+.grid-view [class*='icon-'] {
+    padding-left: 3px;
+    text-decoration: none;
+}
+
 #overall-wrap {
     min-height: 100%;
+    margin: 0 auto -141px;
 }
 .navbar-fixed-top {
     border-bottom: 5px solid #FF9600;
@@ -23,13 +43,11 @@ div#page {
 }
 footer {
     clear: both;
-    text-align: left;
+    text-align: center;
 
     height: 75px;
-    padding: 15px 20px 15px;
+    padding: 20px 0px 45px;
 
-    position: relative;
-    margin-top: -85px;
     border-top: 1px solid #E5E5E5;
 
     line-height: 18px;
@@ -62,7 +80,7 @@ footer {
 .table-vmiddle td {
     vertical-align: middle;
 }
-/* ������ ������� */
+
 .sidebar-nav {
     padding: 9px 0;
 }
@@ -95,10 +113,14 @@ footer {
     top: 11px;
     left: -6px;
 }
-.dropdown-menu li:hover {
+.dropdown-menu li:hover > [class^="nav-header"] {
     color: white;
     text-decoration: none;
     background-color: #08C;
+}
+.dropdown .dropdown-menu .nav-header {
+    margin-left: 0px;
+    margin-right: 0px;
 }
 pre .label{
     white-space: normal !important;
@@ -126,4 +148,9 @@ pre .label{
     margin-right: 10px;
     border: none;
     display: block;
+}
+
+.well .form-actions {
+    padding-bottom: 0;
+    margin-bottom: 0;
 }

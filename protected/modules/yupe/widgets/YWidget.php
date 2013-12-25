@@ -5,10 +5,11 @@
  * Все виджеты Юпи! должны наследовать этот класс
  * Основная особенность - view файлы для виджетов хранятся в каталоге "widgets" текущей темы, подробнее https://github.com/yupe/yupe/issues/26
  *
- * @package yupe.core.widgets
+ * @package  yupe.modules.yupe.widgets
  * @abstract
- * @author yupe team
- * @link http://yupe.ru
+ * @license  BSD http://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F_BSD
+ * @version  0.1
+ * @link     http://yupe.ru
  *
  */
 
@@ -21,28 +22,39 @@ abstract class YWidget extends CWidget
      *
      */
     public $cacheTime;
+
+    /**
+     *
+     *  limit - кол-во записей для вывода
+     *
+    */
+
     public $limit = 5;
+
+    /**
+     *  view - название шаблона (view) который используется для отрисовки виджета
+     *
+     *
+    */
+    public $view;
 
     public function init()
     {
         parent::init();
-
-        //if (!$this->cacheTime && $this->cacheTime !== 0)
-            //$this->cacheTime = Yii::app()->getModule('yupe')->coreCacheTime;
     }
 
     public function getViewPath($checkTheme = false)
     {
         $themeView = null;
         if (Yii::app()->theme !== null) {
-            //@TODO можно обойтись без рефлексии и регулярки
-            $obj = new ReflectionClass(get_class($this));
-            $string = explode('modules' . DIRECTORY_SEPARATOR, $obj->getFileName(), 2);
+            $class = get_class($this);
+            $obj = new ReflectionClass($class);
+            $string = explode(Yii::app()->modulePath . DIRECTORY_SEPARATOR, $obj->getFileName(), 2);
             if (isset($string[1])) {
                 $string = explode(DIRECTORY_SEPARATOR, $string[1], 2);
                 $themeView = Yii::app()->themeManager->basePath . '/' .
                              Yii::app()->theme->name . '/' . 'views' . '/' .
-                             $string[0] . '/' . 'widgets' . '/' . get_class($this);
+                             $string[0] . '/' . 'widgets' . '/' . $class;
             }
         }
         return $themeView && file_exists($themeView) ? $themeView : parent::getViewPath($checkTheme);

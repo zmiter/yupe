@@ -1,58 +1,28 @@
 <?php
 /**
- * FileDocComment
- * Page install migration
+ * m130115_155600_columns_rename install migration
  * Класс миграций для модуля Page:
  *
- * @category YupeMigration
- * @package  YupeCMS
- * @author   YupeTeam <team@yupe.ru>
+ * @author yupe team <team@yupe.ru>
+ * @link http://yupe.ru
+ * @copyright 2009-2013 amyLabs && Yupe! team
+ * @package yupe.modules.page.install.migrations
  * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
- * @link     http://yupe.ru
- **/
-
-/**
- * Page install migration
- * Класс миграций для модуля Page:
+ * @since 0.1
  *
- * @category YupeMigration
- * @package  YupeCMS
- * @author   YupeTeam <team@yupe.ru>
- * @license  BSD https://raw.github.com/yupe/yupe/master/LICENSE
- * @link     http://yupe.ru
- *
- * rename columns
  */
-class m130115_155600_columns_rename extends CDbMigration
+class m130115_155600_columns_rename extends yupe\components\DbMigration
 {
-    /**
-     * Накатываем миграцию:
-     *
-     * @return nothing
-     **/
     public function safeUp()
     {
-        $db = $this->getDbConnection();
-        $this->renameColumn($db->tablePrefix . 'page', 'menu_order', 'order');
-        $this->renameColumn($db->tablePrefix . 'page', 'name', 'title_short');
+        $this->renameColumn('{{page_page}}', 'menu_order', 'order');
+        $this->renameColumn('{{page_page}}', 'name', 'title_short');
     }
 
-    /**
-     * Откатываем миграцию:
-     *
-     * @return nothing
-     **/
+
     public function safeDown()
     {
-        $db = $this->getDbConnection();
-
-        if ($db->schema->getTable($db->tablePrefix . 'page') !== null) {
-
-            if (in_array($db->tablePrefix . "order", $db->schema->getTable($db->tablePrefix . 'page')->columns))
-                $this->renameColumn($db->tablePrefix . 'page', 'order', 'menu_order');
-            
-            if (in_array($db->tablePrefix . "title_short", $db->schema->getTable($db->tablePrefix . 'page')->columns))
-                $this->renameColumn($db->tablePrefix . 'page', 'title_short', 'name');
-        }
+        $this->renameColumn('{{page_page}}', 'order', 'menu_order');
+        $this->renameColumn('{{page_page}}', 'title_short', 'name');
     }
 }
